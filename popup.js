@@ -3,6 +3,7 @@
 const M = window.AmplifyMarkers;
 const P = window.AmplifyParams;
 const S = window.AmplifySnippets;
+const R = window.AmplifyRemote;
 
 const els = {
   status: document.getElementById("status"),
@@ -10,13 +11,17 @@ const els = {
   listHead: document.getElementById("list-head"),
   listBody: document.getElementById("list-body"),
   save: document.getElementById("save"),
+  sync: document.getElementById("sync"),
+  lastSynced: document.getElementById("last-synced"),
   previewRow: document.getElementById("preview-row"),
   previewToggle: document.getElementById("preview-toggle"),
 };
 
-// Snippet library, discovered at runtime from the head/ and body/ folders.
+// Snippet library, synced from the GitHub repo's head/ and body/ folders.
 // Entry: { id, target, title, params, content, label }
 let LIBRARY = [];
+let lastSynced = null;
+let syncing = false;
 // Live field values read from the site: { head: string, body: string }.
 let fields = null;
 let tabId = null;
@@ -246,99 +251,15 @@ function pagePreviewClear() {
 }
 
 // ---------------------------------------------------------------------------
-// Library discovery: enumerate head/ and body/ inside the extension package at
-// runtime, so dropping a .html file in either folder is all it takes.
+// Library: synced from the GitHub repo in lib/config.js (see lib/remote.js).
+// Opening the popup renders from the local cache; Sync (or the once-a-day
+// auto-sync) pulls the latest head/ and body/ files.
 // ---------------------------------------------------------------------------
 
-function getPackageDir() {
-  return new Promise((resolve) => {
-    if (!chrome.runtime.getPackageDirectoryEntry) {
-      resolve(null);
-      return;
-    }
-    try {
-      chrome.runtime.getPackageDirectoryEntry(resolve);
-    } catch (e) {
-      resolve(null);
-    }
-  });
-}
-
-function getSubdir(root, name) {
-  return new Promise((resolve) => {
-    root.getDirectory(name, {}, resolve, () => resolve(null));
-  });
-}
-
-function readDirEntries(dirEntry) {
-  return new Promise((resolve) => {
-    const reader = dirEntry.createReader();
-    const all = [];
-    (function readMore() {
-      reader.readEntries(
-        (entries) => {
-          if (!entries.length) {
-            resolve(all);
-            return;
-          }
-          all.push(...entries);
-          readMore();
-        },
-        () => resolve(all)
-      );
-    })();
-  });
-}
-
-function readFileEntry(fileEntry) {
-  return new Promise((resolve) => {
-    fileEntry.file(
-      (file) => {
-        const r = new FileReader();
-        r.onload = () => resolve(r.result);
-        r.onerror = () => resolve(null);
-        r.readAsText(file);
-      },
-      () => resolve(null)
-    );
-  });
-}
-
-async function discoverFolderSnippets() {
-  const out = [];
-  const root = await getPackageDir();
-  if (!root) return { entries: out, unavailable: true };
-
-  for (const target of ["head", "body"]) {
-    const dir = await getSubdir(root, target);
-    if (!dir) continue;
-    const entries = await readDirEntries(dir);
-    const files = entries
-      .filter((e) => e.isFile && /\.html$/i.test(e.name))
-      .sort((a, b) => a.name.localeCompare(b.name));
-    for (const f of files) {
-      const raw = await readFileEntry(f);
-      if (raw == null) continue;
-      const parsed = S.parseSnippet(raw);
-      const id = S.slugify(f.name);
-      out.push({
-        id,
-        target,
-        title: parsed.title || S.prettify(id),
-        params: parsed.params,
-        content: parsed.content,
-        label: target + "/" + f.name,
-      });
-    }
-  }
-  return { entries: out, unavailable: false };
-}
-
-async function loadLibrary() {
-  const folder = await discoverFolderSnippets();
+function setLibrary(entries) {
   const merged = [];
   const seen = new Set();
-  for (const entry of folder.entries) {
+  for (const entry of entries) {
     let id = entry.id;
     let n = 2;
     while (seen.has(pkey(entry.target, id))) {
@@ -348,7 +269,97 @@ async function loadLibrary() {
     merged.push(Object.assign({}, entry, { id }));
   }
   LIBRARY = merged;
-  return folder.unavailable;
+}
+
+function timeAgo(ms) {
+  if (!ms) return "never";
+  const s = Math.max(0, Math.round((Date.now() - ms) / 1000));
+  if (s < 60) return "just now";
+  const m = Math.round(s / 60);
+  if (m < 60) return m + " min ago";
+  const h = Math.round(m / 60);
+  if (h < 24) return h + (h === 1 ? " hour ago" : " hours ago");
+  const d = Math.round(h / 24);
+  return d + (d === 1 ? " day ago" : " days ago");
+}
+
+function updateSyncLabel() {
+  els.lastSynced.textContent = "Synced " + timeAgo(lastSynced);
+  els.lastSynced.title = lastSynced ? new Date(lastSynced).toLocaleString() : "";
+}
+
+// Cache-first load. Returns false only when there is no cache and the initial
+// sync failed (status already set).
+async function loadLibrary() {
+  const cached = await R.loadCachedLibrary();
+  if (cached) {
+    setLibrary(cached.entries);
+    lastSynced = cached.lastSynced;
+    return true;
+  }
+  setStatus("Downloading snippet library from GitHub\u2026", "info");
+  try {
+    const res = await R.syncLibrary();
+    setLibrary(res.entries);
+    lastSynced = res.lastSynced;
+    return true;
+  } catch (e) {
+    setStatus("Couldn't download the snippet library: " + e.message, "err");
+    setLibrary([]);
+    return false;
+  }
+}
+
+function describeSync(res) {
+  const parts = [];
+  if (res.added) parts.push(res.added + " new");
+  if (res.updated) parts.push(res.updated + " updated");
+  if (res.removed) parts.push(res.removed + " removed");
+  const n = res.entries.length;
+  return (
+    "Synced \u2014 " +
+    n +
+    " snippet" +
+    (n === 1 ? "" : "s") +
+    (parts.length ? " (" + parts.join(", ") + ")" : ", no changes") +
+    "."
+  );
+}
+
+// Re-sync from GitHub and re-render, keeping any unsaved tweaks intact.
+async function runSync(silent) {
+  if (syncing) return;
+  syncing = true;
+  els.sync.disabled = true;
+  if (!silent) setStatus("Syncing with GitHub\u2026", "info");
+  try {
+    const res = await R.syncLibrary();
+    await persistPending();
+    setLibrary(res.entries);
+    lastSynced = res.lastSynced;
+    initParamValues();
+    const pending = await loadPending();
+    if (pending && pending.params) {
+      for (const k of Object.keys(pending.params)) {
+        paramValues[k] = Object.assign({}, paramValues[k] || {}, pending.params[k]);
+      }
+    }
+    render();
+    if (pending) applyPendingChecks(pending);
+    if (previewOn) await applyPreview();
+    updateSyncLabel();
+    if (!silent) setStatus(describeSync(res), "ok");
+  } catch (e) {
+    if (!silent) setStatus("Sync failed: " + e.message, "err");
+  } finally {
+    syncing = false;
+    els.sync.disabled = false;
+  }
+}
+
+function libraryIsStale() {
+  const interval = (window.AMPLIFY_CONFIG && window.AMPLIFY_CONFIG.autoSyncIntervalMs) || 0;
+  return !lastSynced || Date.now() - lastSynced > interval;
 }
 
 // ---------------------------------------------------------------------------
@@ -857,7 +868,7 @@ function renderList(ulEl, target) {
   if (!entries.length && !unknownInstalled.length) {
     const li = document.createElement("li");
     li.className = "empty";
-    li.textContent = `No ${target} snippets yet. Drop .html files into the ${target}/ folder and reopen this popup.`;
+    li.textContent = `No ${target} snippets yet. Add .html files to the ${target}/ folder in the GitHub repo, then hit Sync.`;
     ulEl.appendChild(li);
     return;
   }
@@ -1195,7 +1206,11 @@ async function init() {
   siteKey = "pending:" + new URL(tab.url).hostname;
 
   await loadCollapsed();
-  const discoveryUnavailable = await loadLibrary();
+  const haveLibrary = await loadLibrary();
+  updateSyncLabel();
+  els.sync.disabled = false;
+  if (!haveLibrary) return;
+
   const ok = await loadFields();
   if (!ok) return;
 
@@ -1215,11 +1230,6 @@ async function init() {
     restored = applyPendingChecks(pending);
   }
 
-  if (discoveryUnavailable) {
-    setStatus("Folder discovery unavailable \u2014 load the extension unpacked.", "warn");
-    return;
-  }
-
   // Live preview is on by default (or whatever it was last session).
   previewOn = pending && typeof pending.previewOn === "boolean" ? pending.previewOn : true;
   els.previewToggle.checked = previewOn;
@@ -1233,6 +1243,12 @@ async function init() {
         " \u2014 hit Save to apply them for real, or refresh the page to start over.",
       "info"
     );
+  }
+
+  // Silent once-a-day refresh so everyone converges on the latest snippets
+  // without a network call on every open.
+  if (libraryIsStale()) {
+    runSync(true);
   }
 }
 
@@ -1259,6 +1275,7 @@ async function onSave() {
 }
 
 els.save.addEventListener("click", onSave);
+els.sync.addEventListener("click", () => runSync(false));
 els.previewToggle.addEventListener("change", onPreviewToggle);
 
 // Any checkbox toggle or param edit inside the lists refreshes the live

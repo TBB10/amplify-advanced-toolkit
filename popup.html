@@ -31,13 +31,19 @@
 
     <footer>
       <button id="save" class="btn-save" disabled>Save</button>
+      <div class="sync-group">
+        <button id="sync" class="btn-sync" disabled title="Pull the latest snippets from GitHub">Sync</button>
+        <span id="last-synced" class="last-synced"></span>
+      </div>
     </footer>
 
     <div id="resize-handle" title="Drag to resize (double-click to reset)"></div>
 
+    <script src="lib/config.js"></script>
     <script src="lib/markers.js"></script>
     <script src="lib/params.js"></script>
     <script src="lib/snippets.js"></script>
+    <script src="lib/remote.js"></script>
     <script src="lib/google-fonts.js"></script>
     <script src="popup.js"></script>
   </body>

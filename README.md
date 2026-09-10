@@ -5,16 +5,46 @@ HTML snippets on and off in **Preferences → Advanced** ("Site-wide custom HTML
 before `</head>` / `</body>`") without opening that UI — it reads and writes the
 settings directly through the site's API, using your logged-in browser session.
 
+This repo holds both the extension source (root, `lib/`, `icons/`) and the
+shared **snippet library** (`head/` and `body/`). The extension is installed
+from the Chrome Web Store; snippets are pulled from this repo, so adding or
+editing a file here updates every staff member's toolkit — no extension release
+needed.
+
 ## Install / use
 
-1. `chrome://extensions` → enable **Developer mode** → **Load unpacked** →
-   select this folder.
+1. Install from the Chrome Web Store link shared internally (the listing is
+   unlisted/private). Chrome keeps the extension itself up to date.
 2. Open your Streamline site (any `*.specialdistrict.org` tab, logged in as
    staff).
-3. Click the extension icon. It shows every snippet in the library with a
-   checkbox reflecting whether it is currently installed on the site.
+3. Click the extension icon. On first open it downloads the snippet library
+   from this repo; after that it opens instantly from a local copy. It shows
+   every snippet with a checkbox reflecting whether it is currently installed
+   on the site.
 4. Check/uncheck snippets (and set any of their values), then hit **Save**.
 5. Reload the public site to see the result.
+
+**Sync.** The **Sync** button (bottom right, with a "Synced 2 days ago" label)
+pulls the latest snippets from this repo on demand. The extension also
+re-syncs silently on its own at most once a day, so everyone converges on the
+same library without any network traffic on ordinary opens. Syncing never
+touches your unsaved tweaks.
+
+## Renaming or moving a snippet — read this first
+
+**A snippet's filename is its permanent identity.** The id (`carousel-wave.html`
+→ `carousel-wave`) is baked into the marker comments on every site where that
+snippet has been installed. That means:
+
+- **Renaming a file**, or **moving it between `head/` and `body/`**, changes its
+  id. On every site where the old one is installed, it will show up as
+  **"not in library"** — still preserved and still working on the site, but
+  unlinked from its checkbox and controls — until someone re-applies the renamed
+  snippet there and removes the old one.
+- **To change what a snippet does, edit the file in place.** Behavior, CSS,
+  title, params — all of that can change freely. Only the filename must stay.
+- Pick the filename carefully when you create a snippet. Describe the effect
+  (`tighten-accordion-spacing.html`), not the mechanism.
 
 The popup can be resized: drag the small grip in the bottom-left corner to make
 it wider/taller (double-click the grip to reset). The size is remembered and
@@ -73,10 +103,14 @@ Limitations to be aware of:
 
 ## Adding snippets
 
-Put a `.html` file in `head/` (injected before `</head>`) or `body/` (injected
-before `</body>`), then reopen the popup — files are discovered at runtime, so
-there's no build step. (If a brand-new file doesn't appear, reload the
-extension once in `chrome://extensions`; Chrome caches the package listing.)
+Add a `.html` file to `head/` (injected before `</head>`) or `body/` (injected
+before `</body>`) in this repo and push to `main` — either by cloning, or with
+GitHub's web editor ("Add file" inside the folder). There's no build step.
+Everyone gets it the next time they hit **Sync** (or automatically within a
+day). Editing an existing file works the same way.
+
+Before pushing, re-read "Renaming or moving a snippet" above: create new files
+freely, edit existing ones in place, but don't rename or move them.
 
 ## Snippet file format
 
@@ -85,9 +119,9 @@ and markup that should be injected verbatim into the page. Two rules matter:
 
 1. **The filename becomes the snippet's identity.** The extension detects
    "already installed" by an ID derived from the filename
-   (`carousel-wave.html` → `carousel-wave`). Renaming a file after it's been
-   installed on a site makes the old install show up as "not in library", so
-   pick a good name up front and keep it.
+   (`carousel-wave.html` → `carousel-wave`). See "Renaming or moving a
+   snippet" above — never rename or move a file once it has been pushed; edit
+   it in place instead.
 2. **Optional metadata goes in comment lines at the very top of the file.**
    Metadata lines are stripped before injection.
 
@@ -276,7 +310,9 @@ snippet file, follow these steps and output a single `.html` file:
 5. **Name it.** Add a `<!-- title: … -->` describing the *effect*
    ("Tighten Accordion Spacing"), and save the file as the kebab-case of that
    title (`tighten-accordion-spacing.html`). The filename is the snippet's
-   permanent identity — don't rename after it's been installed somewhere.
+   permanent identity. **Never rename or move an existing snippet file** — if
+   you're asked to change a snippet that already exists in `head/` or `body/`,
+   edit that file in place and keep its filename exactly as is.
 
 6. **Don't add decorative wrapper comments** ("my script starts here") — the
    extension wraps each snippet in its own marker comments on install.
@@ -299,18 +335,43 @@ snippet file, follow these steps and output a single `.html` file:
   by marker ID (color changes don't affect it). On save, the extension strips
   its own blocks, keeps everything else byte-for-byte, and re-appends the
   checked snippets.
-- Snippets installed on the site whose ID isn't in your library (a coworker's
-  snippet, or a file you deleted) are listed as "not in library", checked. They
-  are preserved exactly as-is unless you uncheck them.
+- Snippets installed on the site whose ID isn't in your library (a renamed
+  file, or one that was deleted from the repo) are listed as "not in library",
+  checked. They are preserved exactly as-is unless you uncheck them.
+- The snippet library is fetched from this repo's `head/` and `body/` folders
+  via the public GitHub API (`lib/remote.js`, repo set in `lib/config.js`).
+  The popup renders from a local cache in `chrome.storage`; a sync lists both
+  folders (2 requests) and downloads only files whose git sha changed. GitHub
+  allows 60 anonymous requests/hour per IP, so even a whole office syncing
+  through one router stays far under the limit. If GitHub is unreachable, the
+  popup keeps working from the cache and Sync reports the error.
+
+## Developing the extension
+
+- Load unpacked: `chrome://extensions` → Developer mode → Load unpacked →
+  select this folder. Reload after code changes.
+- To test snippets before they land on `main`, push them to a branch (or a
+  fork) and point `lib/config.js` at it, then Sync. Switch it back before
+  packaging.
+- Package for the Chrome Web Store with `./package.sh`; it writes
+  `dist/amplify-advanced-toolkit-<version>.zip` containing only the extension
+  files (the `head/`/`body/` library is fetched at runtime, so it's excluded).
+  Upload that zip in the developer dashboard as an **Unlisted** (or Private)
+  item and share the install link internally.
 
 ## Repo layout
 
 ```
 manifest.json        MV3 manifest
 popup.html/css/js    the popup UI and all logic
-head/                snippet files injected before </head>
-body/                snippet files injected before </body>
+icons/               extension icons
+head/                snippet library: files injected before </head>
+body/                snippet library: files injected before </body>
+lib/config.js        which GitHub repo/branch to sync from; auto-sync interval
+lib/remote.js        GitHub sync + local cache
 lib/markers.js       marker wrap/detect/strip/rebuild
 lib/params.js        {{placeholder}} substitution + current-value extraction
 lib/snippets.js      snippet file metadata parsing
+lib/google-fonts.js  font list for the Custom Fonts picker
+package.sh           builds the Chrome Web Store zip
 ```
