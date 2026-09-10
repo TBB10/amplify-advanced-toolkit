@@ -9,6 +9,15 @@ cd "$(dirname "$0")"
 version=$(node -e 'process.stdout.write(require("./manifest.json").version)')
 out="dist/amplify-advanced-toolkit-${version}.zip"
 
+# The Chrome Web Store rejects uploads whose manifest description exceeds 132
+# characters (and names over 45) - fail fast here instead of at upload time.
+node -e '
+  const m = require("./manifest.json");
+  const fail = (msg) => { console.error("package.sh: " + msg); process.exit(1); };
+  if (m.description.length > 132) fail("manifest description is " + m.description.length + " chars (max 132)");
+  if (m.name.length > 45) fail("manifest name is " + m.name.length + " chars (max 45)");
+'
+
 mkdir -p dist
 rm -f "$out"
 
