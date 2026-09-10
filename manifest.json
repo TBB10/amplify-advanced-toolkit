@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Amplify Advanced Toolkit",
   "version": "1.0.0",
-  "description": "For Streamline staff: toggle shared site-wide HTML/CSS snippets on Amplify sites with live preview. Synced from GitHub.",
+  "description": "For CivicPlus staff on Streamline Amplify sites: toggle shared site-wide HTML/CSS snippets with live preview. Synced from GitHub.",
   "icons": {
     "16": "icons/icon16.png",
     "32": "icons/icon32.png",
