@@ -1,0 +1,418 @@
+:root {
+  --bg: #ffffff;
+  --fg: #1f2933;
+  --muted: #6b7280;
+  --border: #e5e7eb;
+  --accent: #1978be;
+  --accent-dark: #155e94;
+  --ok: #2e7d32;
+  --err: #c62828;
+  --warn: #b45309;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  width: 360px;
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  color: var(--fg);
+  background: var(--bg);
+  display: flex;
+  flex-direction: column;
+}
+
+/* Applied when the user has dragged the resize handle: the body gets explicit
+   dimensions and the snippet list flexes to fill the extra room. */
+body.resized {
+  overflow: hidden;
+}
+
+body.resized main {
+  max-height: none;
+  flex: 1;
+  min-height: 0;
+}
+
+header {
+  padding: 10px 16px 6px;
+  border-bottom: 1px solid var(--border);
+}
+
+h1 {
+  font-size: 14px;
+  margin: 0;
+}
+
+.status {
+  padding: 6px 16px;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.status.info {
+  color: var(--muted);
+}
+.status.ok {
+  color: var(--ok);
+}
+.status.err {
+  color: var(--err);
+}
+.status.warn {
+  color: var(--warn);
+}
+
+.preview-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 16px 5px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.preview-row input[type="checkbox"] {
+  width: 14px;
+  height: 14px;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+.preview-row .hint {
+  color: #9aa4b2;
+  font-size: 10px;
+}
+
+main {
+  padding: 4px 16px 8px;
+  max-height: 360px;
+  overflow-y: auto;
+}
+
+.group {
+  margin: 10px 0 6px;
+}
+
+.group h2 {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  margin: 0 0 6px;
+}
+
+.group h2 .hint {
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 400;
+  color: var(--border);
+  color: #9aa4b2;
+}
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.list li {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 8px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  margin-bottom: 6px;
+}
+
+.list li > label {
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.list li .filename {
+  display: block;
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+.list li input[type="checkbox"] {
+  margin-top: 2px;
+  width: 16px;
+  height: 16px;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+.badge {
+  font-size: 10px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: #e8f1f9;
+  color: var(--accent-dark);
+  align-self: center;
+}
+
+.params {
+  grid-column: 1 / -1;
+  margin-top: 6px;
+  padding-top: 8px;
+  border-top: 1px dashed var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.params[hidden] {
+  display: none;
+}
+
+.param-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.param-row label {
+  font-size: 12px;
+  color: var(--muted);
+  flex: 1;
+}
+
+.param-row input[type="color"] {
+  width: 34px;
+  height: 26px;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: none;
+  cursor: pointer;
+}
+
+.param-row input.hex {
+  width: 92px;
+  font: inherit;
+  font-size: 12px;
+  padding: 4px 6px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+
+.param-row select {
+  font: inherit;
+  font-size: 12px;
+  padding: 4px 6px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: #fff;
+}
+
+.param-row input.num {
+  width: 64px;
+  font: inherit;
+  font-size: 12px;
+  padding: 4px 6px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+
+.param-row input.text {
+  flex: 1;
+  font: inherit;
+  font-size: 12px;
+  padding: 4px 6px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+
+.param-row input[type="range"] {
+  flex: 1;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+.param-row .unit,
+.param-row .range-val {
+  font-size: 11px;
+  color: var(--muted);
+  min-width: 34px;
+}
+
+.param-row.stacked {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.param-row.stacked > label {
+  flex: none;
+}
+
+.param-row textarea {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 11px;
+  padding: 6px 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  resize: vertical;
+  width: 100%;
+}
+
+.fontmap {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.fontmap .fontmap-row {
+  gap: 8px;
+}
+
+.fontmap .fontmap-row > label {
+  flex: 0 0 30%;
+  font-size: 12px;
+}
+
+.fontmap .fontmap-row input.text {
+  flex: 1;
+  min-width: 0;
+}
+
+.fontmap .fontmap-row select.weight {
+  flex: 0 0 auto;
+  font: inherit;
+  font-size: 11px;
+  padding: 4px 4px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: #fff;
+  max-width: 74px;
+}
+
+.fontmap .fontmap-all {
+  padding-bottom: 6px;
+  border-bottom: 1px dashed var(--border);
+  margin-bottom: 2px;
+}
+
+.fontmap .fontmap-all > label {
+  font-weight: 600;
+  color: var(--fg);
+}
+
+.multiselect {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 6px 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: #fbfcfd;
+}
+
+.ms-opt {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.ms-opt input[type="checkbox"] {
+  width: 14px;
+  height: 14px;
+  accent-color: var(--accent);
+}
+
+.empty {
+  font-size: 12px;
+  color: var(--muted);
+  padding: 6px 2px;
+}
+
+.badge.unknown {
+  background: #fdf3e0;
+  color: var(--warn);
+}
+
+.row-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  align-self: center;
+}
+
+.chevron {
+  background: none;
+  border: none;
+  padding: 0 2px;
+  font-size: 12px;
+  line-height: 1;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.chevron:hover {
+  color: var(--fg);
+}
+
+footer {
+  display: flex;
+  gap: 8px;
+  padding: 12px 16px;
+  border-top: 1px solid var(--border);
+}
+
+button {
+  font: inherit;
+  border-radius: 8px;
+  padding: 8px 14px;
+  cursor: pointer;
+  border: 1px solid transparent;
+}
+
+.btn-save {
+  background: var(--accent);
+  color: #fff;
+  font-weight: 600;
+  flex: 1;
+}
+.btn-save:hover:not(:disabled) {
+  background: var(--accent-dark);
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+#resize-handle {
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  width: 16px;
+  height: 16px;
+  cursor: nesw-resize;
+  opacity: 0.45;
+  z-index: 10;
+}
+
+#resize-handle::before {
+  content: "";
+  position: absolute;
+  left: 3px;
+  bottom: 3px;
+  width: 8px;
+  height: 8px;
+  border-left: 2px solid var(--muted);
+  border-bottom: 2px solid var(--muted);
+  border-bottom-left-radius: 3px;
+}
+
+#resize-handle:hover {
+  opacity: 0.9;
+}

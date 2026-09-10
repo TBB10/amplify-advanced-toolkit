@@ -1,0 +1,103 @@
+<!-- title: Carousel Wave -->
+<!-- param: color type=color label="Wave color" default=#1978BE -->
+<style>
+/* Apply only on desktop screens (min-width 1024px) */
+@media screen and (min-width: 1024px) {
+    .splide__slide .carousel-slide-content {
+      min-height: 250px;
+    }
+  }
+</style>
+<script>
+(function () {
+  var WAVE_ID = 'carousel-bleed-wave';
+  var D = 'M681.358 99.6025C419.811 130.111 119.139 45.2462 -0.00375175 0L-0.00390625 110H1597.67H1685.33H1773V109V47.7646C1253.91 -13.3418 965.155 66.4982 681.358 99.6025Z';
+
+  function makeWave() {
+    var ns='http://www.w3.org/2000/svg';
+    var svg=document.createElementNS(ns,'svg');
+    svg.id=WAVE_ID;
+    svg.setAttribute('viewBox','0 0 1773 110');
+    svg.setAttribute('preserveAspectRatio','none');
+    svg.setAttribute('aria-hidden','true');
+    svg.setAttribute('focusable','false');
+    svg.style.position='absolute';
+    svg.style.left='0';
+    svg.style.right='0';
+    svg.style.bottom='-1px';
+    svg.style.width='100%';
+    svg.style.height='110px';
+    svg.style.display='block';
+    svg.style.pointerEvents='none';
+    svg.style.zIndex='3';
+    svg.style.marginTop='3rem'; // spacing below button
+    var path=document.createElementNS(ns,'path');
+    path.setAttribute('d', D);
+    path.setAttribute('fill', '{{color}}');
+    svg.appendChild(path);
+    return svg;
+  }
+
+  function injectInto(carousel){
+    if(!carousel) return false;
+
+    // ensure positioning context
+    var cs = getComputedStyle(carousel);
+    if(cs.position==='static'){ carousel.style.position='relative'; }
+
+    // remove any prior wave by ID (avoid CSS.escape)
+    var old = document.getElementById(WAVE_ID);
+    if (old && carousel.contains(old)) old.remove();
+
+    var wave = makeWave();
+
+    // place before the FIRST direct .amplify-section-instance child
+    // (full-bleed, not inside padded inner containers)
+    var firstSection = carousel.querySelector(':scope > .amplify-section-instance');
+    if (firstSection) {
+      carousel.insertBefore(wave, firstSection);
+    } else {
+      carousel.appendChild(wave);
+    }
+    return true;
+  }
+
+  function run(){
+    // be flexible: any carousel; if you only want the one with a CTA,
+    // filter to those containing a .btn-pill
+    var carousels = Array.from(document.querySelectorAll('.amplify-carousel-container'));
+    var did = false;
+    carousels.forEach(function(c){
+      if (c.querySelector('.btn-pill')) {
+        did = injectInto(c) || did;
+      }
+    });
+    return did;
+  }
+
+  function boot(){
+    if (run()) return;
+    var mo = new MutationObserver(function(){ if (run()) mo.disconnect(); });
+    mo.observe(document.documentElement, { childList:true, subtree:true });
+    // give it more time—carousels can mount late
+    setTimeout(function(){ mo.disconnect(); }, 15000);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', boot);
+  } else {
+    boot();
+  }
+})();
+</script>
+
+<style>
+/* keep wave above any overlay */
+.amplify-carousel-container .overlay-container { z-index: 1; }
+#carousel-bleed-wave { z-index: 3; transition: height .25s ease; }
+
+/* responsive height */
+@media (max-width: 991px){ #carousel-bleed-wave { height: 80px; } }
+@media (max-width: 575px){ #carousel-bleed-wave { height: 60px; } }
+.splide__slide .carousel-slide-content a .btn-pill { margin-top: 1.5rem; color: #fff; border-color: #fff; margin-bottom: .75rem !important; }
+</style>

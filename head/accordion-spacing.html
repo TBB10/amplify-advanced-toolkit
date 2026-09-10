@@ -1,0 +1,21 @@
+<!-- title: Tighten Accordion Spacing -->
+<!-- param: space type=range label="Spacing" unit=px min=0 max=30 step=1 default=2 -->
+<style>
+.amplify-section-container:has(.accordion) {
+  margin-top: {{space}}px !important;
+  margin-bottom: {{space}}px !important;
+  padding-top: {{space}}px !important;
+  padding-bottom: {{space}}px !important;
+}
+
+/* Remove spacing from the accordion itself */
+.amplify-section-container:has(.accordion) .accordion {
+  margin-top: {{space}}px !important;
+  margin-bottom: {{space}}px !important;
+}
+
+/* Remove default heading spacing inside the accordion header */
+.amplify-section-container:has(.accordion) .accordion-header h2 {
+  margin: {{space}}px !important;
+}
+</style>

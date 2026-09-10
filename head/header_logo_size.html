@@ -1,0 +1,19 @@
+<!-- title: Header Logo Size -->
+<!-- param: desktop_width type=range label="Desktop Logo Width" unit=px min=100 max=700 step=10 default=380 -->
+<!-- param: vertical_padding type=range label="Desktop Vertical Padding" unit=px min=0 max=50 step=1 default=20 -->
+
+<style>
+.amplify-header .container #org-logo img {
+  height: auto;
+  width: {{desktop_width}}px;
+  padding: {{vertical_padding}}px 0;
+}
+
+@media (max-width: 64rem) {
+  .amplify-header .container #org-logo img {
+    height: auto;
+    width: 130px;
+    padding: 0;
+  }
+}
+</style>

@@ -1,0 +1,12 @@
+{
+  "manifest_version": 3,
+  "name": "Amplify Advanced Toolkit",
+  "version": "0.1.0",
+  "description": "Toggle site-wide custom HTML snippets in the Streamline/Amplify Advanced settings without touching the UI.",
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Amplify Advanced Toolkit"
+  },
+  "permissions": ["scripting", "activeTab", "tabs", "storage"],
+  "host_permissions": ["https://*.specialdistrict.org/*"]
+}

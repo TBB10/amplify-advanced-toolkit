@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="popup.css" />
+    <title>Amplify Advanced Toolkit</title>
+  </head>
+  <body>
+    <header>
+      <h1>Amplify Advanced Toolkit</h1>
+    </header>
+
+    <div id="status" class="status" role="status"></div>
+
+    <label id="preview-row" class="preview-row" hidden>
+      <input type="checkbox" id="preview-toggle" />
+      <span>Live preview <span class="hint">(not saved until you hit Save)</span></span>
+    </label>
+
+    <main id="content" hidden>
+      <section class="group">
+        <h2>Head <span class="hint">before &lt;/head&gt;</span></h2>
+        <ul id="list-head" class="list"></ul>
+      </section>
+      <section class="group">
+        <h2>Body <span class="hint">before &lt;/body&gt;</span></h2>
+        <ul id="list-body" class="list"></ul>
+      </section>
+    </main>
+
+    <footer>
+      <button id="save" class="btn-save" disabled>Save</button>
+    </footer>
+
+    <div id="resize-handle" title="Drag to resize (double-click to reset)"></div>
+
+    <script src="lib/markers.js"></script>
+    <script src="lib/params.js"></script>
+    <script src="lib/snippets.js"></script>
+    <script src="lib/google-fonts.js"></script>
+    <script src="popup.js"></script>
+  </body>
+</html>
