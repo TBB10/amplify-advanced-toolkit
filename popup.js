@@ -13,6 +13,13 @@ const els = {
   save: document.getElementById("save"),
   sync: document.getElementById("sync"),
   lastSynced: document.getElementById("last-synced"),
+  recovery: document.getElementById("recovery"),
+  recoveryLauncher: document.getElementById("recovery-launcher"),
+  recoveryCard: document.getElementById("recovery-card"),
+  recoveryHeading: document.getElementById("recovery-heading"),
+  recoveryCopy: document.getElementById("recovery-copy"),
+  recoveryToggle: document.getElementById("recovery-toggle"),
+  recoveryHide: document.getElementById("recovery-hide"),
   previewRow: document.getElementById("preview-row"),
   previewToggle: document.getElementById("preview-toggle"),
 };
@@ -377,6 +384,76 @@ function isSupported(url) {
   } catch (e) {
     return false;
   }
+}
+
+// ---------------------------------------------------------------------------
+// Site Recovery. Streamline treats ?no_custom_html on any page URL as
+// "load this page with the custom Head/Body HTML disabled", which is the
+// escape hatch when a snippet breaks the site. Nothing is removed from the
+// saved settings; it only affects how the current page loads.
+// ---------------------------------------------------------------------------
+
+function isRecoveryMode(urlString) {
+  try {
+    return new URL(urlString).searchParams.has("no_custom_html");
+  } catch (e) {
+    return false;
+  }
+}
+
+function buildRecoveryUrl(urlString) {
+  const url = new URL(urlString);
+  url.searchParams.set("no_custom_html", "");
+  // URLSearchParams serializes as "no_custom_html="; Streamline documents the
+  // bare "?no_custom_html" form, so drop the trailing "=".
+  return url.toString().replace(/([?&])no_custom_html=(?=&|#|$)/, "$1no_custom_html");
+}
+
+function removeRecoveryMode(urlString) {
+  const url = new URL(urlString);
+  url.searchParams.delete("no_custom_html");
+  return url.toString();
+}
+
+async function toggleRecoveryMode(tab) {
+  if (!tab || !tab.id || !tab.url) {
+    setStatus("No active website found.", "err");
+    return;
+  }
+  const target = isRecoveryMode(tab.url)
+    ? removeRecoveryMode(tab.url)
+    : buildRecoveryUrl(tab.url);
+  try {
+    await chrome.tabs.update(tab.id, { url: target });
+    window.close();
+  } catch (e) {
+    setStatus("Could not switch recovery mode: " + e, "err");
+  }
+}
+
+function renderRecoveryTools(tab) {
+  const active = isRecoveryMode(tab.url);
+
+  els.recovery.hidden = false;
+  els.recoveryCard.classList.toggle("active", active);
+  els.recoveryHeading.textContent = active ? "Recovery Mode Active" : "Site Recovery";
+  els.recoveryCopy.textContent = active
+    ? "Custom HTML is temporarily disabled for this page. Your saved custom HTML has not been removed."
+    : "If a snippet breaks the site, temporarily load this page with custom HTML disabled so you can fix it.";
+  els.recoveryToggle.textContent = active ? "Return to Normal Site" : "Open Recovery Mode";
+
+  // Compact launcher normally; open the card straight away while in recovery
+  // mode so the way back is obvious.
+  const setExpanded = (expanded) => {
+    els.recoveryLauncher.hidden = expanded;
+    els.recoveryCard.hidden = !expanded;
+  };
+  setExpanded(active);
+  els.recoveryHide.hidden = active;
+
+  els.recoveryLauncher.onclick = () => setExpanded(true);
+  els.recoveryHide.onclick = () => setExpanded(false);
+  els.recoveryToggle.onclick = () => toggleRecoveryMode(tab);
 }
 
 async function runInPage(func, args) {
@@ -786,9 +863,18 @@ function buildParamRow(key, p) {
     row.appendChild(box);
   } else {
     // color (default): swatch picker + exact hex text, kept in sync.
+    //
+    // A native <input type="color"> always shows *some* color (usually black)
+    // even when our value is blank, so the picker is wrapped and its swatch is
+    // hidden behind a "no color" slash until a real color is chosen.
+    const swatchWrap = document.createElement("div");
+    swatchWrap.className = "swatch-wrap";
+
+    const emptyState = document.createElement("div");
+    emptyState.className = "swatch-empty";
+
     const swatch = document.createElement("input");
     swatch.type = "color";
-    if (isHex6(current)) swatch.value = current;
 
     const hex = document.createElement("input");
     hex.type = "text";
@@ -796,16 +882,33 @@ function buildParamRow(key, p) {
     hex.value = current || "";
     hex.placeholder = "#1978BE";
 
+    const syncColorDisplay = (value) => {
+      const v = String(value || "").trim();
+      if (isHex6(v)) {
+        swatch.value = v;
+        swatch.style.opacity = "1";
+        emptyState.hidden = true;
+      } else {
+        swatch.style.opacity = "0";
+        emptyState.hidden = false;
+      }
+    };
+    syncColorDisplay(current);
+
     swatch.addEventListener("input", () => {
       hex.value = swatch.value;
       set(swatch.value);
+      syncColorDisplay(swatch.value);
     });
     hex.addEventListener("input", () => {
-      set(hex.value.trim());
-      if (isHex6(hex.value)) swatch.value = hex.value.trim();
+      const v = hex.value.trim();
+      set(v);
+      syncColorDisplay(v);
     });
 
-    row.appendChild(swatch);
+    swatchWrap.appendChild(emptyState);
+    swatchWrap.appendChild(swatch);
+    row.appendChild(swatchWrap);
     row.appendChild(hex);
   }
 
@@ -1204,6 +1307,7 @@ async function init() {
     return;
   }
   siteKey = "pending:" + new URL(tab.url).hostname;
+  renderRecoveryTools(tab);
 
   await loadCollapsed();
   const haveLibrary = await loadLibrary();

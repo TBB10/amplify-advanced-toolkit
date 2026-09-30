@@ -24,6 +24,13 @@ needed.
 4. Check/uncheck snippets (and set any of their values), then hit **Save**.
 5. Reload the public site to see the result.
 
+**Site Recovery.** If a snippet ever breaks a site, the **Site Recovery**
+button at the bottom of the popup reloads the current page with
+`?no_custom_html` appended, which tells Streamline to load the page with all
+custom Head/Body HTML disabled. Nothing is removed from the saved settings — it
+only affects that page load — so you can open the toolkit, uncheck the bad
+snippet, Save, and use "Return to Normal Site" to go back.
+
 **Sync.** The **Sync** button (bottom right, with a "Synced 2 days ago" label)
 pulls the latest snippets from this repo on demand. The extension also
 re-syncs silently on its own at most once a day, so everyone converges on the
