@@ -119,6 +119,16 @@ day). Editing an existing file works the same way.
 Before pushing, re-read "Renaming or moving a snippet" above: create new files
 freely, edit existing ones in place, but don't rename or move them.
 
+**Contributors, start here:**
+
+- [`CONTRIBUTING.md`](CONTRIBUTING.md) — the full guide: what you can and
+  can't change, the file format, script rules, workflow, testing, and a
+  pre-commit checklist.
+- [`docs/AI-CONTEXT.md`](docs/AI-CONTEXT.md) — a self-contained spec written
+  for an AI assistant. Keep a copy locally and attach it to ChatGPT, Claude,
+  Cursor, etc. so it can turn your raw CSS/JS into a correctly formatted
+  snippet file.
+
 ## Snippet file format
 
 A snippet is a plain `.html` file: any combination of `<style>`, `<script>`,
