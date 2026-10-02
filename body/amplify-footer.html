@@ -1,0 +1,3079 @@
+<!-- title: Footer Layout -->
+
+<!-- param: style type=select label="Layout style" options="Standard:standard|Compact:compact" default="standard" -->
+
+<!-- param: columns type=select label="Columns" options="1 Column:1|2 Columns:2|3 Columns:3" default="2" -->
+
+<!-- param: column1Align type=select label="Column 1 alignment" options="Left:left|Center:center|Right:right" default="left" -->
+
+<!-- param: column2Align type=select label="Column 2 alignment" options="Left:left|Center:center|Right:right" default="right" -->
+
+<!-- param: column3Align type=select label="Column 3 alignment" options="Left:left|Center:center|Right:right" default="right" -->
+
+<!-- param: logoColumn type=select label="Header logo in footer" options="Do not show:0|Column 1:1|Column 2:2|Column 3:3" default="0" -->
+
+<!-- param: logoWidth type=number label="Logo max width" unit=px min=80 max=500 step=10 default=240 -->
+
+<!-- param: copyrightColumn type=select label="Copyright" options="Column 1:1|Column 2:2|Column 3:3" default="1" -->
+
+<!-- param: contactColumn type=select label="Contact + hours" options="Column 1:1|Column 2:2|Column 3:3" default="1" -->
+
+<!-- param: socialColumn type=select label="Social media" options="Column 1:1|Column 2:2|Column 3:3" default="1" -->
+
+<!-- param: socialSpacing type=number label="Space above social media" unit=px min=0 max=50 step=1 default="" -->
+
+<!-- param: menuColumn type=select label="Footer menu" options="Column 1:1|Column 2:2|Column 3:3" default="2" -->
+
+<!-- param: metaColumn type=select label="Powered by / Sign In" options="Column 1:1|Column 2:2|Column 3:3" default="2" -->
+
+<!-- param: metaLayout type=select label="Powered by / Sign In layout" options="Stacked:stacked|Inline:inline" default="stacked" -->
+
+<!-- param: hours type=text label="Hours of operation" placeholder="Monday–Friday 8 AM–5 PM" default="" -->
+
+<!-- param: showTransparency type=select label="Transparency link" options="Show:show|Hide:hide" default="show" -->
+
+<!-- param: showPoweredBy type=select label="Powered by Streamline" options="Show:show|Hide:hide" default="show" -->
+
+<!-- param: showLogin type=select label="Login" options="Show:show|Hide:hide" default="show" -->
+
+<!-- param: fontColor type=color label="Text color" default="" -->
+
+<!-- param: fontSize type=number label="Text size" unit=px min=16 max=32 step=1 default="" -->
+
+<!-- param: fontWeight type=select label="Text weight" options="Normal:400|Medium:500|Semi-bold:600|Bold:700" default="400" -->
+
+<!-- param: lineSpacing type=number label="Line spacing" unit=px min=0 max=30 step=1 default="" -->
+
+<!-- param: sectionSpacing type=number label="Section spacing" unit=px min=0 max=50 step=1 default="" -->
+
+<!-- param: columnGap type=number label="Column gap" unit=px min=0 max=100 step=5 default="" -->
+
+<!-- param: paddingY type=number label="Vertical padding" unit=px min=0 max=150 step=5 default="" -->
+
+<!-- param: paddingX type=number label="Horizontal padding" unit=px min=0 max=100 step=5 default="" -->
+
+<script>
+(function () {
+
+  const settings = {
+    style: "{{style}}".trim() || "standard",
+    columns: Number("{{columns}}".trim()) || 2,
+
+    column1Align: "{{column1Align}}".trim() || "left",
+    column2Align: "{{column2Align}}".trim() || "right",
+    column3Align: "{{column3Align}}".trim() || "right",
+
+    logoColumn: Number("{{logoColumn}}".trim()) || 0,
+    logoWidth: Number("{{logoWidth}}".trim()) || 240,
+
+    copyrightColumn: Number("{{copyrightColumn}}".trim()) || 1,
+    contactColumn: Number("{{contactColumn}}".trim()) || 1,
+
+    socialColumn: Number("{{socialColumn}}".trim()) || 1,
+    socialSpacing: "{{socialSpacing}}".trim(),
+
+    menuColumn: Number("{{menuColumn}}".trim()) || 2,
+    metaColumn: Number("{{metaColumn}}".trim()) || 2,
+    metaLayout: "{{metaLayout}}".trim() || "stacked",
+
+    hours: "{{hours}}".trim(),
+
+    showTransparency: "{{showTransparency}}".trim() || "show",
+    showPoweredBy: "{{showPoweredBy}}".trim() || "show",
+    showLogin: "{{showLogin}}".trim() || "show",
+
+    fontColor: "{{fontColor}}".trim(),
+    fontSize: "{{fontSize}}".trim(),
+    fontWeight: "{{fontWeight}}".trim() || "400",
+
+    lineSpacing: "{{lineSpacing}}".trim(),
+    sectionSpacing: "{{sectionSpacing}}".trim(),
+    columnGap: "{{columnGap}}".trim(),
+    paddingY: "{{paddingY}}".trim(),
+    paddingX: "{{paddingX}}".trim()
+  };
+
+
+  const currentScript =
+    document.currentScript;
+
+
+  const isPreview =
+    currentScript &&
+    currentScript.hasAttribute(
+      "data-amplify-preview"
+    );
+
+
+  const ROOT_CLASS =
+    "amplify-custom-footer-layout";
+
+
+  const STYLE_ID =
+    "amplify-custom-footer-layout-style";
+
+
+  const ORIGINAL_CLASS =
+    "amplify-custom-footer-original";
+
+
+  function applyFooterLayout() {
+
+  const footer =
+    document.querySelector(
+      "footer.amplify-footer"
+    );
+
+
+  if (!footer) {
+
+    console.warn(
+      "[Footer Layout] Footer not found."
+    );
+
+    return;
+  }
+
+
+  const nativeContainer =
+    footer.querySelector(
+      ".container.pure-g"
+    );
+
+
+  const nativeContact =
+    footer.querySelector(
+      ".contact-info"
+    );
+
+
+  const nativeNav =
+    footer.querySelector(
+      'nav[aria-label="Footer"]'
+    );
+
+
+  if (
+    !nativeContainer ||
+    !nativeContact ||
+    !nativeNav
+  ) {
+
+    console.warn(
+      "[Footer Layout] Expected footer structure was not found."
+    );
+
+    return;
+  }
+
+
+  /*
+   * ============================================================
+   * CLEAN UP PREVIOUS RUN
+   * ============================================================
+   */
+
+  footer
+    .querySelectorAll(
+      "." + ROOT_CLASS
+    )
+    .forEach(el => {
+
+      el.remove();
+
+    });
+
+
+  const oldStyle =
+    document.getElementById(
+      STYLE_ID
+    );
+
+
+  if (oldStyle) {
+
+    oldStyle.remove();
+
+  }
+
+
+  nativeContainer
+    .classList
+    .remove(
+      ORIGINAL_CLASS
+    );
+
+
+  /*
+   * ============================================================
+   * CHECK FOR CUSTOMIZATION
+   * ============================================================
+   */
+
+  const hasLayoutChange =
+
+    settings.style !== "standard" ||
+
+    settings.columns !== 2 ||
+
+    settings.metaLayout !== "stacked";
+
+
+  const hasAlignmentChange =
+
+    settings.column1Align !== "left" ||
+
+    settings.column2Align !== "right" ||
+
+    (
+      settings.columns === 3 &&
+      settings.column3Align !== "right"
+    );
+
+
+  const hasPlacementChange =
+
+    settings.copyrightColumn !== 1 ||
+
+    settings.contactColumn !== 1 ||
+
+    settings.socialColumn !== 1 ||
+
+    settings.menuColumn !== 2 ||
+
+    settings.metaColumn !== 2;
+
+
+  const hasLogoChange =
+
+    settings.logoColumn !== 0;
+
+
+  const hasVisibilityChange =
+
+    settings.showTransparency !== "show" ||
+
+    settings.showPoweredBy !== "show" ||
+
+    settings.showLogin !== "show";
+
+
+  const hasTypographyChange =
+
+    settings.fontColor !== "" ||
+
+    settings.fontSize !== "" ||
+
+    settings.fontWeight !== "400";
+
+
+  const hasSpacingChange =
+
+    settings.lineSpacing !== "" ||
+
+    settings.sectionSpacing !== "" ||
+
+    settings.socialSpacing !== "" ||
+
+    settings.columnGap !== "" ||
+
+    settings.paddingY !== "" ||
+
+    settings.paddingX !== "";
+
+
+  const hasContentChange =
+
+    settings.hours !== "";
+
+
+  const hasCustomization =
+
+    hasLayoutChange ||
+
+    hasAlignmentChange ||
+
+    hasPlacementChange ||
+
+    hasLogoChange ||
+
+    hasVisibilityChange ||
+
+    hasTypographyChange ||
+
+    hasSpacingChange ||
+
+    hasContentChange;
+
+
+  if (!hasCustomization) {
+
+    return;
+
+  }
+
+
+  /*
+   * ============================================================
+   * CAPTURE NATIVE VALUES
+   * ============================================================
+   */
+
+  const nativeContainerStyles =
+    getComputedStyle(
+      nativeContainer
+    );
+
+
+  const nativePaddingTop =
+    nativeContainerStyles.paddingTop;
+
+
+  const nativePaddingBottom =
+    nativeContainerStyles.paddingBottom;
+
+
+  const nativePaddingLeft =
+    nativeContainerStyles.paddingLeft;
+
+
+  const nativePaddingRight =
+    nativeContainerStyles.paddingRight;
+
+
+  /*
+   * Capture native social spacing.
+   *
+   * If Streamline does not provide one, fall back to 12px.
+   */
+
+  const nativeSocial =
+    nativeContact.querySelector(
+      ".social-media"
+    );
+
+
+  let nativeSocialMarginTop =
+    "12px";
+
+
+  if (nativeSocial) {
+
+    const nativeSocialStyles =
+      getComputedStyle(
+        nativeSocial
+      );
+
+
+    const marginTop =
+      nativeSocialStyles.marginTop;
+
+
+    if (
+      marginTop &&
+      marginTop !== "0px"
+    ) {
+
+      nativeSocialMarginTop =
+        marginTop;
+
+    }
+
+  }
+
+
+  /*
+   * ============================================================
+   * HELPERS
+   * ============================================================
+   */
+
+  function actualColumn(
+    requestedColumn
+  ) {
+
+    if (
+      settings.columns <= 1
+    ) {
+
+      return 1;
+
+    }
+
+
+    if (
+      requestedColumn >
+      settings.columns
+    ) {
+
+      return settings.columns;
+
+    }
+
+
+    if (
+      requestedColumn < 1
+    ) {
+
+      return 1;
+
+    }
+
+
+    return requestedColumn;
+
+  }
+
+
+  function getColumnAlignment(
+    number
+  ) {
+
+    if (number === 1) {
+
+      return settings.column1Align;
+
+    }
+
+
+    if (number === 2) {
+
+      return settings.column2Align;
+
+    }
+
+
+    return settings.column3Align;
+
+  }
+
+
+  function justifyFor(
+    alignment
+  ) {
+
+    if (
+      alignment === "center"
+    ) {
+
+      return "center";
+
+    }
+
+
+    if (
+      alignment === "right"
+    ) {
+
+      return "flex-end";
+
+    }
+
+
+    return "flex-start";
+
+  }
+
+
+  function makeGroup(
+    className
+  ) {
+
+    const group =
+      document.createElement(
+        "div"
+      );
+
+
+    group.className =
+      "amplify-footer-group " +
+      className;
+
+
+    return group;
+
+  }
+
+
+  function normalizeText(
+    value
+  ) {
+
+    return String(
+      value || ""
+    )
+      .replace(
+        /\s+/g,
+        " "
+      )
+      .trim()
+      .toLowerCase();
+
+  }
+
+
+  function isCopyrightElement(
+    el
+  ) {
+
+    return normalizeText(
+      el.textContent
+    ).includes(
+      "copyright"
+    );
+
+  }
+
+
+  function isPoweredByElement(
+    el
+  ) {
+
+    const text =
+      normalizeText(
+        el.textContent
+      );
+
+
+    return (
+
+      text.includes(
+        "powered by"
+      ) ||
+
+      text.includes(
+        "government websites by civicplus"
+      )
+
+    );
+
+  }
+
+
+  function isSignInElement(
+    el
+  ) {
+
+    const text =
+      normalizeText(
+        el.textContent
+      );
+
+
+    return (
+
+      text === "sign in" ||
+
+      text === "staff login" ||
+
+      text.includes(
+        "staff login"
+      )
+
+    );
+
+  }
+
+
+  function isTransparencyElement(
+    el
+  ) {
+
+    return normalizeText(
+      el.textContent
+    ).includes(
+      "transparency"
+    );
+
+  }
+
+
+  function cloneWithoutIds(
+    node
+  ) {
+
+    const clone =
+      node.cloneNode(
+        true
+      );
+
+
+    if (
+      clone.removeAttribute
+    ) {
+
+      clone.removeAttribute(
+        "id"
+      );
+
+    }
+
+
+    clone
+      .querySelectorAll(
+        "[id]"
+      )
+      .forEach(el => {
+
+        el.removeAttribute(
+          "id"
+        );
+
+      });
+
+
+    return clone;
+
+  }
+
+
+  function makeColumn(
+    number
+  ) {
+
+    const column =
+      document.createElement(
+        "div"
+      );
+
+
+    column.className =
+
+      "amplify-footer-layout-column " +
+
+      "amplify-footer-layout-column-" +
+
+      number;
+
+
+    column.dataset.column =
+      String(
+        number
+      );
+
+
+    column.dataset.alignment =
+      getColumnAlignment(
+        number
+      );
+
+
+    return column;
+
+  }
+
+
+  function addGroupToColumn(
+    group,
+    requestedColumn
+  ) {
+
+    if (
+      !group ||
+      !group.children.length
+    ) {
+
+      return;
+
+    }
+
+
+    const columnNumber =
+      actualColumn(
+        requestedColumn
+      );
+
+
+    const target =
+      layout.querySelector(
+
+        `[data-column="${columnNumber}"]`
+
+      );
+
+
+    if (target) {
+
+      target.appendChild(
+        group
+      );
+
+    }
+
+  }
+
+
+  function optionalPx(
+    value
+  ) {
+
+    if (
+      value === ""
+    ) {
+
+      return null;
+
+    }
+
+
+    const number =
+      Number(
+        value
+      );
+
+
+    if (
+      !Number.isFinite(
+        number
+      )
+    ) {
+
+      return null;
+
+    }
+
+
+    return (
+      number +
+      "px"
+    );
+
+  }
+
+
+  function findHeaderLogo() {
+
+    const selectors = [
+
+      "header a[href='/'] img",
+
+      ".amplify-header a[href='/'] img",
+
+      "header .logo img",
+
+      ".amplify-header .logo img",
+
+      "header .site-logo img",
+
+      ".site-logo img",
+
+      "header img"
+
+    ];
+
+
+    for (
+      const selector
+      of selectors
+    ) {
+
+      const images =
+        document.querySelectorAll(
+          selector
+        );
+
+
+      for (
+        const img
+        of images
+      ) {
+
+        if (
+          !img.src
+        ) {
+
+          continue;
+
+        }
+
+
+        const rect =
+          img.getBoundingClientRect();
+
+
+        if (
+
+          rect.width >= 60 ||
+
+          rect.height >= 40
+
+        ) {
+
+          return img;
+
+        }
+
+      }
+
+    }
+
+
+    return null;
+
+  }
+
+
+  /*
+   * ============================================================
+   * BUILD LAYOUT
+   * ============================================================
+   */
+
+  const layout =
+    document.createElement(
+      "div"
+    );
+
+
+  layout.className =
+    ROOT_CLASS;
+
+
+  layout.dataset.columns =
+    String(
+      settings.columns
+    );
+
+
+  layout.dataset.style =
+    settings.style;
+
+
+  layout.dataset.metaLayout =
+    settings.metaLayout;
+
+
+  if (isPreview) {
+
+    layout.setAttribute(
+      "data-amplify-preview",
+      "1"
+    );
+
+  }
+
+
+  for (
+    let i = 1;
+    i <= settings.columns;
+    i++
+  ) {
+
+    layout.appendChild(
+      makeColumn(
+        i
+      )
+    );
+
+  }
+
+
+  /*
+   * ============================================================
+   * LOGO
+   * ============================================================
+   */
+
+  const logoGroup =
+    makeGroup(
+      "amplify-footer-logo-group"
+    );
+
+
+  if (
+    settings.logoColumn > 0
+  ) {
+
+    const headerLogo =
+      findHeaderLogo();
+
+
+    if (headerLogo) {
+
+      const logoLink =
+        headerLogo.closest(
+          "a"
+        );
+
+
+      let logoElement;
+
+
+      if (logoLink) {
+
+        logoElement =
+          cloneWithoutIds(
+            logoLink
+          );
+
+      } else {
+
+        logoElement =
+          cloneWithoutIds(
+            headerLogo
+          );
+
+      }
+
+
+      logoElement
+        .classList
+        .add(
+          "amplify-footer-logo"
+        );
+
+
+      logoGroup.appendChild(
+        logoElement
+      );
+
+
+    } else {
+
+      console.warn(
+        "[Footer Layout] Header logo not found."
+      );
+
+    }
+
+  }
+
+
+  /*
+   * ============================================================
+   * COPYRIGHT
+   * ============================================================
+   */
+
+  const copyrightGroup =
+    makeGroup(
+      "amplify-footer-copyright-group"
+    );
+
+
+  Array.from(
+    nativeContact.children
+  )
+    .forEach(child => {
+
+      if (
+        !isCopyrightElement(
+          child
+        )
+      ) {
+
+        return;
+
+      }
+
+
+      const cloned =
+        cloneWithoutIds(
+          child
+        );
+
+
+      cloned
+        .classList
+        .add(
+          "amplify-footer-copyright"
+        );
+
+
+      copyrightGroup
+        .appendChild(
+          cloned
+        );
+
+    });
+
+
+  /*
+   * ============================================================
+   * CONTACT
+   * ============================================================
+   */
+
+  const contactGroup =
+    makeGroup(
+      "amplify-footer-contact-group"
+    );
+
+
+  Array.from(
+    nativeContact.children
+  )
+    .forEach(child => {
+
+      if (
+
+        child.classList &&
+
+        child.classList.contains(
+          "social-media"
+        )
+
+      ) {
+
+        return;
+
+      }
+
+
+      if (
+        isCopyrightElement(
+          child
+        )
+      ) {
+
+        return;
+
+      }
+
+
+      contactGroup.appendChild(
+        cloneWithoutIds(
+          child
+        )
+      );
+
+    });
+
+
+  if (
+    settings.hours
+  ) {
+
+    const hours =
+      document.createElement(
+        "div"
+      );
+
+
+    hours.className =
+      "amplify-footer-hours";
+
+
+    hours.textContent =
+      settings.hours;
+
+
+    contactGroup.appendChild(
+      hours
+    );
+
+  }
+
+
+  /*
+   * ============================================================
+   * SOCIAL
+   * ============================================================
+   */
+
+  const socialGroup =
+    makeGroup(
+      "amplify-footer-social-group"
+    );
+
+
+  if (nativeSocial) {
+
+    socialGroup.appendChild(
+      cloneWithoutIds(
+        nativeSocial
+      )
+    );
+
+  }
+
+
+  /*
+   * ============================================================
+   * FOOTER MENU
+   * ============================================================
+   */
+
+  const menuGroup =
+    makeGroup(
+      "amplify-footer-menu-group"
+    );
+
+
+  const menuNav =
+    document.createElement(
+      "nav"
+    );
+
+
+  menuNav.className =
+    "amplify-footer-menu-nav";
+
+
+  menuNav.setAttribute(
+    "aria-label",
+    "Footer links"
+  );
+
+
+  const menuList =
+    document.createElement(
+      "ul"
+    );
+
+
+  menuList.className =
+    "amplify-footer-menu";
+
+
+  const nativeItems =
+    nativeNav.querySelectorAll(
+      "ul > li"
+    );
+
+
+  nativeItems.forEach(
+    item => {
+
+      if (
+
+        isPoweredByElement(
+          item
+        ) ||
+
+        isSignInElement(
+          item
+        )
+
+      ) {
+
+        return;
+
+      }
+
+
+      if (
+
+        settings.showTransparency ===
+          "hide" &&
+
+        isTransparencyElement(
+          item
+        )
+
+      ) {
+
+        return;
+
+      }
+
+
+      menuList.appendChild(
+        cloneWithoutIds(
+          item
+        )
+      );
+
+    }
+  );
+
+
+  if (
+    menuList.children.length
+  ) {
+
+    menuNav.appendChild(
+      menuList
+    );
+
+
+    menuGroup.appendChild(
+      menuNav
+    );
+
+  }
+
+
+  /*
+   * ============================================================
+   * POWERED BY + LOGIN
+   * ============================================================
+   */
+
+  const metaGroup =
+    makeGroup(
+      "amplify-footer-meta-group"
+    );
+
+
+  const meta =
+    document.createElement(
+      "div"
+    );
+
+
+  meta.className =
+    "amplify-footer-meta";
+
+
+  nativeItems.forEach(
+    item => {
+
+      const poweredBy =
+        isPoweredByElement(
+          item
+        );
+
+
+      const login =
+        isSignInElement(
+          item
+        );
+
+
+      if (
+        !poweredBy &&
+        !login
+      ) {
+
+        return;
+
+      }
+
+
+      if (
+
+        poweredBy &&
+
+        settings.showPoweredBy ===
+          "hide"
+
+      ) {
+
+        return;
+
+      }
+
+
+      if (
+
+        login &&
+
+        settings.showLogin ===
+          "hide"
+
+      ) {
+
+        return;
+
+      }
+
+
+      const link =
+        item.querySelector(
+          "a"
+        );
+
+
+      if (!link) {
+
+        return;
+
+      }
+
+
+      const row =
+        document.createElement(
+          "div"
+        );
+
+
+      row.className =
+
+        poweredBy
+
+          ? "amplify-footer-powered-row"
+
+          : "amplify-footer-login-row";
+
+
+      row.appendChild(
+        cloneWithoutIds(
+          link
+        )
+      );
+
+
+      meta.appendChild(
+        row
+      );
+
+    }
+  );
+
+
+  if (
+    meta.children.length
+  ) {
+
+    metaGroup.appendChild(
+      meta
+    );
+
+  }
+
+
+  /*
+   * ============================================================
+   * PLACE GROUPS
+   * ============================================================
+   */
+
+  if (
+    settings.logoColumn > 0
+  ) {
+
+    addGroupToColumn(
+      logoGroup,
+      settings.logoColumn
+    );
+
+  }
+
+
+  addGroupToColumn(
+    copyrightGroup,
+    settings.copyrightColumn
+  );
+
+
+  addGroupToColumn(
+    contactGroup,
+    settings.contactColumn
+  );
+
+
+  addGroupToColumn(
+    socialGroup,
+    settings.socialColumn
+  );
+
+
+  addGroupToColumn(
+    menuGroup,
+    settings.menuColumn
+  );
+
+
+  addGroupToColumn(
+    metaGroup,
+    settings.metaColumn
+  );
+
+
+  nativeContainer
+    .insertAdjacentElement(
+      "afterend",
+      layout
+    );
+
+
+  nativeContainer
+    .classList
+    .add(
+      ORIGINAL_CLASS
+    );
+
+
+  /*
+   * ============================================================
+   * VALUES
+   * ============================================================
+   */
+
+  const effectiveColor =
+
+    settings.fontColor ||
+
+    "var(--fg-color)";
+
+
+  const verticalPadding =
+    optionalPx(
+      settings.paddingY
+    );
+
+
+  const horizontalPadding =
+    optionalPx(
+      settings.paddingX
+    );
+
+
+  const columnGap =
+    optionalPx(
+      settings.columnGap
+    );
+
+
+  const sectionSpacing =
+    optionalPx(
+      settings.sectionSpacing
+    );
+
+
+  const lineSpacing =
+    optionalPx(
+      settings.lineSpacing
+    );
+
+
+  const socialSpacing =
+    optionalPx(
+      settings.socialSpacing
+    );
+
+
+  /*
+   * ============================================================
+   * BASE CSS
+   * ============================================================
+   */
+
+  let css = `
+
+    footer.amplify-footer
+    .${ORIGINAL_CLASS} {
+
+      display:
+        none !important;
+
+    }
+
+
+    footer.amplify-footer
+    .${ROOT_CLASS} {
+
+      box-sizing:
+        border-box;
+
+      display:
+        grid;
+
+      align-items:
+        start;
+
+      width:
+        100%;
+
+      max-width:
+        1200px;
+
+      margin:
+        0 auto;
+
+      padding-top:
+        ${verticalPadding || nativePaddingTop};
+
+      padding-bottom:
+        ${verticalPadding || nativePaddingBottom};
+
+      padding-left:
+        ${horizontalPadding || nativePaddingLeft};
+
+      padding-right:
+        ${horizontalPadding || nativePaddingRight};
+
+      color:
+        ${effectiveColor};
+
+    }
+
+
+    footer.amplify-footer
+    .${ROOT_CLASS}[data-columns="1"] {
+
+      grid-template-columns:
+        minmax(0, 1fr);
+
+    }
+
+
+    footer.amplify-footer
+    .${ROOT_CLASS}[data-columns="2"] {
+
+      grid-template-columns:
+        repeat(
+          2,
+          minmax(0, 1fr)
+        );
+
+    }
+
+
+    footer.amplify-footer
+    .${ROOT_CLASS}[data-columns="3"] {
+
+      grid-template-columns:
+        repeat(
+          3,
+          minmax(0, 1fr)
+        );
+
+    }
+
+
+    /*
+     * Keep every column anchored to the same top edge.
+     */
+
+    footer.amplify-footer
+    .${ROOT_CLASS}
+    .amplify-footer-layout-column {
+
+      align-self:
+        start;
+
+      min-width:
+        0;
+
+      margin-top:
+        0 !important;
+
+      padding-top:
+        0 !important;
+
+    }
+
+
+    /*
+     * The first content block in every column starts at the top.
+     */
+
+    footer.amplify-footer
+    .${ROOT_CLASS}
+    .amplify-footer-layout-column
+    > .amplify-footer-group:first-child {
+
+      margin-top:
+        0 !important;
+
+      padding-top:
+        0 !important;
+
+    }
+
+
+    /*
+     * Prevent the first actual element inside a group from adding
+     * its own top margin.
+     */
+
+    footer.amplify-footer
+    .${ROOT_CLASS}
+    .amplify-footer-layout-column
+    > .amplify-footer-group:first-child
+    > :first-child {
+
+      margin-top:
+        0 !important;
+
+    }
+
+
+    /*
+     * ============================================================
+     * NORMALIZE CONTENT ROW BOXES
+     *
+     * Native footer styles can add padding/margins to divs, list
+     * items, and links after they are moved into the custom layout.
+     * Normalize the individual rows without removing our group-level
+     * spacing controls.
+     * ============================================================
+     */
+
+    footer.amplify-footer
+    .${ROOT_CLASS}
+    .amplify-footer-copyright-group
+    > *,
+
+    footer.amplify-footer
+    .${ROOT_CLASS}
+    .amplify-footer-contact-group
+    > *,
+
+    footer.amplify-footer
+    .${ROOT_CLASS}
+    .amplify-footer-powered-row,
+
+    footer.amplify-footer
+    .${ROOT_CLASS}
+    .amplify-footer-login-row {
+
+      margin-top:
+        0 !important;
+
+      margin-bottom:
+        0 !important;
+
+      padding-top:
+        0 !important;
+
+      padding-bottom:
+        0 !important;
+
+    }
+
+
+    /* Footer navigation items can inherit native padding. */
+
+    footer.amplify-footer
+    .${ROOT_CLASS}
+    .amplify-footer-menu
+    > li {
+
+      margin-top:
+        0 !important;
+
+      margin-bottom:
+        0 !important;
+
+      padding-top:
+        0 !important;
+
+      padding-bottom:
+        0 !important;
+
+    }
+
+
+    footer.amplify-footer
+    .${ROOT_CLASS}
+    .amplify-footer-menu
+    > li
+    > a {
+
+      margin-top:
+        0 !important;
+
+      margin-bottom:
+        0 !important;
+
+      padding-top:
+        0 !important;
+
+      padding-bottom:
+        0 !important;
+
+    }
+
+
+    /* Powered by / Sign In links use the same normalized row box. */
+
+    footer.amplify-footer
+    .${ROOT_CLASS}
+    .amplify-footer-powered-row
+    > a,
+
+    footer.amplify-footer
+    .${ROOT_CLASS}
+    .amplify-footer-login-row
+    > a {
+
+      margin:
+        0 !important;
+
+      padding-top:
+        0 !important;
+
+      padding-bottom:
+        0 !important;
+
+    }
+
+  `;
+
+
+  /*
+   * ============================================================
+   * COLUMN GAP
+   * ============================================================
+   */
+
+  if (
+    columnGap !== null
+  ) {
+
+    css += `
+
+      footer.amplify-footer
+      .${ROOT_CLASS} {
+
+        column-gap:
+          ${columnGap};
+
+      }
+
+    `;
+
+  }
+
+
+  /*
+   * ============================================================
+   * COLUMN ALIGNMENT
+   * ============================================================
+   */
+
+  css += `
+
+    footer.amplify-footer
+    .amplify-footer-layout-column[data-column="1"] {
+
+      text-align:
+        ${settings.column1Align};
+
+    }
+
+
+    footer.amplify-footer
+    .amplify-footer-layout-column[data-column="2"] {
+
+      text-align:
+        ${settings.column2Align};
+
+    }
+
+
+    footer.amplify-footer
+    .amplify-footer-layout-column[data-column="3"] {
+
+      text-align:
+        ${settings.column3Align};
+
+    }
+
+  `;
+
+
+  /*
+   * ============================================================
+   * TYPOGRAPHY
+   * ============================================================
+   */
+
+  css += `
+
+    footer.amplify-footer
+    .${ROOT_CLASS},
+
+    footer.amplify-footer
+    .${ROOT_CLASS} div,
+
+    footer.amplify-footer
+    .${ROOT_CLASS} p,
+
+    footer.amplify-footer
+    .${ROOT_CLASS} span,
+
+    footer.amplify-footer
+    .${ROOT_CLASS} li,
+
+    footer.amplify-footer
+    .${ROOT_CLASS} a {
+
+      font-weight:
+        ${settings.fontWeight}
+        !important;
+
+    }
+
+  `;
+
+
+  if (
+    settings.fontSize !== ""
+  ) {
+
+    const fontSize =
+      Number(
+        settings.fontSize
+      );
+
+
+    if (
+      Number.isFinite(
+        fontSize
+      )
+    ) {
+
+      css += `
+
+        footer.amplify-footer
+        .${ROOT_CLASS},
+
+        footer.amplify-footer
+        .${ROOT_CLASS} div,
+
+        footer.amplify-footer
+        .${ROOT_CLASS} p,
+
+        footer.amplify-footer
+        .${ROOT_CLASS} span,
+
+        footer.amplify-footer
+        .${ROOT_CLASS} li,
+
+        footer.amplify-footer
+        .${ROOT_CLASS} a {
+
+          font-size:
+            ${fontSize}px
+            !important;
+
+        }
+
+      `;
+
+    }
+
+  }
+
+
+  /*
+   * ============================================================
+   * LINKS + COLORS
+   * ============================================================
+   */
+
+  css += `
+
+    footer.amplify-footer
+    .${ROOT_CLASS} a,
+
+    footer.amplify-footer
+    .${ROOT_CLASS} a:link,
+
+    footer.amplify-footer
+    .${ROOT_CLASS} a:visited,
+
+    footer.amplify-footer
+    .${ROOT_CLASS} a:hover,
+
+    footer.amplify-footer
+    .${ROOT_CLASS} a:focus,
+
+    footer.amplify-footer
+    .${ROOT_CLASS} a:focus-visible,
+
+    footer.amplify-footer
+    .${ROOT_CLASS} a:active {
+
+      color:
+        ${effectiveColor}
+        !important;
+
+      text-decoration:
+        none !important;
+
+      text-decoration-line:
+        none !important;
+
+      border-bottom:
+        0 !important;
+
+    }
+
+
+    footer.amplify-footer
+    .${ROOT_CLASS} a:focus-visible {
+
+      outline:
+        2px solid currentColor;
+
+      outline-offset:
+        3px;
+
+    }
+
+
+    footer.amplify-footer
+    .${ROOT_CLASS}
+    .powered-by path {
+
+      fill:
+        ${effectiveColor}
+        !important;
+
+    }
+
+
+    footer.amplify-footer
+    .${ROOT_CLASS}
+    .social-media svg path {
+
+      fill:
+        ${effectiveColor}
+        !important;
+
+    }
+
+  `;
+
+
+  /*
+   * ============================================================
+   * MENU STRUCTURE
+   * ============================================================
+   */
+
+  css += `
+
+    footer.amplify-footer
+    .${ROOT_CLASS}
+    .amplify-footer-menu-nav {
+
+      display:
+        block !important;
+
+      width:
+        100% !important;
+
+      max-width:
+        none !important;
+
+      margin:
+        0 !important;
+
+      padding:
+        0 !important;
+
+      float:
+        none !important;
+
+    }
+
+
+    footer.amplify-footer
+    .${ROOT_CLASS}
+    .amplify-footer-menu {
+
+      display:
+        flex !important;
+
+      flex-direction:
+        column !important;
+
+      flex-wrap:
+        nowrap !important;
+
+      width:
+        100% !important;
+
+      max-width:
+        none !important;
+
+      list-style:
+        none !important;
+
+      margin:
+        0 !important;
+
+      padding:
+        0 !important;
+
+    }
+
+
+    footer.amplify-footer
+    .${ROOT_CLASS}
+    .amplify-footer-menu
+    > li {
+
+      display:
+        block !important;
+
+      width:
+        auto !important;
+
+      max-width:
+        none !important;
+
+      list-style:
+        none !important;
+
+      margin:
+        0 !important;
+
+      padding:
+        0 !important;
+
+      float:
+        none !important;
+
+    }
+
+
+    footer.amplify-footer
+    .${ROOT_CLASS}
+    .amplify-footer-menu
+    > li
+    > a {
+
+      display:
+        inline-block !important;
+
+      width:
+        auto !important;
+
+      max-width:
+        100% !important;
+
+      margin:
+        0 !important;
+
+      padding:
+        0 !important;
+
+      white-space:
+        normal !important;
+
+    }
+
+  `;
+
+
+  /*
+   * ============================================================
+   * MENU ALIGNMENT
+   * ============================================================
+   */
+
+  css += `
+
+    footer.amplify-footer
+    [data-column="1"]
+    .amplify-footer-menu {
+
+      align-items:
+        ${justifyFor(
+          settings.column1Align
+        )};
+
+    }
+
+
+    footer.amplify-footer
+    [data-column="2"]
+    .amplify-footer-menu {
+
+      align-items:
+        ${justifyFor(
+          settings.column2Align
+        )};
+
+    }
+
+
+    footer.amplify-footer
+    [data-column="3"]
+    .amplify-footer-menu {
+
+      align-items:
+        ${justifyFor(
+          settings.column3Align
+        )};
+
+    }
+
+  `;
+
+
+  /*
+   * ============================================================
+   * SOCIAL
+   * ============================================================
+   */
+
+  css += `
+
+    footer.amplify-footer
+    .amplify-footer-social-group {
+
+      margin-top:
+        ${socialSpacing || nativeSocialMarginTop}
+        !important;
+
+    }
+
+
+    footer.amplify-footer
+    .amplify-footer-social-group
+    .social-media {
+
+      display:
+        flex !important;
+
+      flex-wrap:
+        wrap;
+
+      align-items:
+        center;
+
+    }
+
+
+    footer.amplify-footer
+    [data-column="1"]
+    .social-media {
+
+      justify-content:
+        ${justifyFor(
+          settings.column1Align
+        )};
+
+    }
+
+
+    footer.amplify-footer
+    [data-column="2"]
+    .social-media {
+
+      justify-content:
+        ${justifyFor(
+          settings.column2Align
+        )};
+
+    }
+
+
+    footer.amplify-footer
+    [data-column="3"]
+    .social-media {
+
+      justify-content:
+        ${justifyFor(
+          settings.column3Align
+        )};
+
+    }
+
+  `;
+
+
+  /*
+   * ============================================================
+   * POWERED BY / SIGN IN LAYOUT
+   * ============================================================
+   */
+
+  if (
+    settings.metaLayout === "inline"
+  ) {
+
+    css += `
+
+      footer.amplify-footer
+      .${ROOT_CLASS}
+      .amplify-footer-meta {
+
+        display:
+          flex !important;
+
+        flex-direction:
+          row !important;
+
+        flex-wrap:
+          wrap !important;
+
+        align-items:
+          center !important;
+
+        width:
+          100% !important;
+
+        gap:
+          0 !important;
+
+      }
+
+
+      footer.amplify-footer
+      .${ROOT_CLASS}
+      .amplify-footer-powered-row,
+
+      footer.amplify-footer
+      .${ROOT_CLASS}
+      .amplify-footer-login-row {
+
+        display:
+          inline-flex !important;
+
+        align-items:
+          center !important;
+
+        width:
+          auto !important;
+
+        margin:
+          0 !important;
+
+        padding:
+          0 !important;
+
+      }
+
+
+      footer.amplify-footer
+      .${ROOT_CLASS}
+      .amplify-footer-powered-row
+      + .amplify-footer-login-row::before {
+
+        content:
+          "|";
+
+        display:
+          inline-block;
+
+        margin:
+          0 8px;
+
+        opacity:
+          0.7;
+
+      }
+
+    `;
+
+  } else {
+
+    css += `
+
+      footer.amplify-footer
+      .${ROOT_CLASS}
+      .amplify-footer-meta {
+
+        display:
+          flex !important;
+
+        flex-direction:
+          column !important;
+
+        flex-wrap:
+          nowrap !important;
+
+      }
+
+    `;
+
+  }
+
+
+  /*
+   * META ALIGNMENT
+   */
+
+  css += `
+
+    footer.amplify-footer
+    [data-column="1"]
+    .amplify-footer-meta {
+
+      align-items:
+        ${justifyFor(
+          settings.column1Align
+        )};
+
+      justify-content:
+        ${justifyFor(
+          settings.column1Align
+        )};
+
+    }
+
+
+    footer.amplify-footer
+    [data-column="2"]
+    .amplify-footer-meta {
+
+      align-items:
+        ${justifyFor(
+          settings.column2Align
+        )};
+
+      justify-content:
+        ${justifyFor(
+          settings.column2Align
+        )};
+
+    }
+
+
+    footer.amplify-footer
+    [data-column="3"]
+    .amplify-footer-meta {
+
+      align-items:
+        ${justifyFor(
+          settings.column3Align
+        )};
+
+      justify-content:
+        ${justifyFor(
+          settings.column3Align
+        )};
+
+    }
+
+  `;
+
+
+  /*
+   * ============================================================
+   * LINE SPACING
+   * ============================================================
+   */
+
+  if (
+    lineSpacing !== null
+  ) {
+
+    css += `
+
+      footer.amplify-footer
+      .amplify-footer-contact-group {
+
+        display:
+          flex;
+
+        flex-direction:
+          column;
+
+        gap:
+          ${lineSpacing};
+
+      }
+
+
+      footer.amplify-footer
+      .amplify-footer-menu {
+
+        gap:
+          ${lineSpacing};
+
+      }
+
+
+      footer.amplify-footer
+      .amplify-footer-social-group
+      .social-media {
+
+        gap:
+          ${lineSpacing};
+
+      }
+
+
+      footer.amplify-footer
+      .amplify-footer-contact-group
+      > *,
+
+      footer.amplify-footer
+      .amplify-footer-menu
+      > li {
+
+        margin-top:
+          0 !important;
+
+        margin-bottom:
+          0 !important;
+
+      }
+
+    `;
+
+
+    if (
+      settings.metaLayout === "stacked"
+    ) {
+
+      css += `
+
+        footer.amplify-footer
+        .amplify-footer-meta {
+
+          gap:
+            ${lineSpacing};
+
+        }
+
+      `;
+
+    }
+
+
+    if (
+      settings.metaLayout === "inline"
+    ) {
+
+      css += `
+
+        footer.amplify-footer
+        .amplify-footer-powered-row
+        + .amplify-footer-login-row::before {
+
+          margin-left:
+            ${lineSpacing};
+
+          margin-right:
+            ${lineSpacing};
+
+        }
+
+      `;
+
+    }
+
+  }
+
+
+  /*
+   * ============================================================
+   * SECTION SPACING
+   * ============================================================
+   */
+
+  if (
+    sectionSpacing !== null
+  ) {
+
+    css += `
+
+      footer.amplify-footer
+      .amplify-footer-group {
+
+        margin:
+          0 !important;
+
+      }
+
+
+      footer.amplify-footer
+      .amplify-footer-group
+      + .amplify-footer-group {
+
+        margin-top:
+          ${sectionSpacing}
+          !important;
+
+      }
+
+    `;
+
+  }
+
+
+  /*
+   * ============================================================
+   * LOGO
+   * ============================================================
+   */
+
+  css += `
+
+    footer.amplify-footer
+    .amplify-footer-logo {
+
+      display:
+        inline-block;
+
+    }
+
+
+    footer.amplify-footer
+    .amplify-footer-logo img,
+
+    footer.amplify-footer
+    img.amplify-footer-logo {
+
+      width:
+        auto !important;
+
+      height:
+        auto !important;
+
+      max-width:
+        ${settings.logoWidth}px
+        !important;
+
+      max-height:
+        200px;
+
+      object-fit:
+        contain;
+
+    }
+
+  `;
+
+
+  /*
+   * ============================================================
+   * COMPACT MODE
+   * ============================================================
+   */
+
+  if (
+    settings.style === "compact"
+  ) {
+
+    css += `
+
+      footer.amplify-footer
+      .${ROOT_CLASS}[data-style="compact"] {
+
+        align-items:
+          center;
+
+      }
+
+
+      /*
+       * CONTACT
+       */
+
+      footer.amplify-footer
+      .${ROOT_CLASS}[data-style="compact"]
+      .amplify-footer-contact-group {
+
+        display:
+          flex !important;
+
+        flex-direction:
+          row !important;
+
+        flex-wrap:
+          wrap !important;
+
+        align-items:
+          center !important;
+
+        gap:
+          0 !important;
+
+      }
+
+
+      footer.amplify-footer
+      .${ROOT_CLASS}[data-style="compact"]
+      .amplify-footer-contact-group
+      > * {
+
+        display:
+          inline-flex !important;
+
+        align-items:
+          center !important;
+
+        margin:
+          0 !important;
+
+      }
+
+
+      footer.amplify-footer
+      .${ROOT_CLASS}[data-style="compact"]
+      .amplify-footer-contact-group
+      > *:not(:last-child)::after {
+
+        content:
+          "|";
+
+        display:
+          inline-block;
+
+        margin:
+          0 8px;
+
+        opacity:
+          0.7;
+
+      }
+
+
+      /*
+       * MENU
+       */
+
+      footer.amplify-footer
+      .${ROOT_CLASS}[data-style="compact"]
+      .amplify-footer-menu-nav {
+
+        display:
+          flex !important;
+
+        width:
+          100% !important;
+
+        margin:
+          0 !important;
+
+        padding:
+          0 !important;
+
+      }
+
+
+      footer.amplify-footer
+      .${ROOT_CLASS}[data-style="compact"]
+      .amplify-footer-menu {
+
+        display:
+          flex !important;
+
+        flex-direction:
+          row !important;
+
+        flex-wrap:
+          wrap !important;
+
+        align-items:
+          center !important;
+
+        width:
+          100% !important;
+
+        margin:
+          0 !important;
+
+        padding:
+          0 !important;
+
+        column-gap:
+          16px;
+
+        row-gap:
+          0;
+
+      }
+
+
+      footer.amplify-footer
+      .${ROOT_CLASS}[data-style="compact"]
+      .amplify-footer-menu
+      > li {
+
+        display:
+          inline-flex !important;
+
+        width:
+          auto !important;
+
+        margin:
+          0 !important;
+
+        padding:
+          0 !important;
+
+        white-space:
+          nowrap !important;
+
+      }
+
+
+      /*
+       * COLUMN 1 COMPACT ALIGNMENT
+       */
+
+      footer.amplify-footer
+      .${ROOT_CLASS}[data-style="compact"]
+      [data-column="1"]
+      .amplify-footer-contact-group,
+
+      footer.amplify-footer
+      .${ROOT_CLASS}[data-style="compact"]
+      [data-column="1"]
+      .amplify-footer-menu,
+
+      footer.amplify-footer
+      .${ROOT_CLASS}[data-style="compact"]
+      [data-column="1"]
+      .amplify-footer-meta {
+
+        justify-content:
+          ${justifyFor(
+            settings.column1Align
+          )}
+          !important;
+
+      }
+
+
+      /*
+       * COLUMN 2 COMPACT ALIGNMENT
+       */
+
+      footer.amplify-footer
+      .${ROOT_CLASS}[data-style="compact"]
+      [data-column="2"]
+      .amplify-footer-contact-group,
+
+      footer.amplify-footer
+      .${ROOT_CLASS}[data-style="compact"]
+      [data-column="2"]
+      .amplify-footer-menu,
+
+      footer.amplify-footer
+      .${ROOT_CLASS}[data-style="compact"]
+      [data-column="2"]
+      .amplify-footer-meta {
+
+        justify-content:
+          ${justifyFor(
+            settings.column2Align
+          )}
+          !important;
+
+      }
+
+
+      /*
+       * COLUMN 3 COMPACT ALIGNMENT
+       */
+
+      footer.amplify-footer
+      .${ROOT_CLASS}[data-style="compact"]
+      [data-column="3"]
+      .amplify-footer-contact-group,
+
+      footer.amplify-footer
+      .${ROOT_CLASS}[data-style="compact"]
+      [data-column="3"]
+      .amplify-footer-menu,
+
+      footer.amplify-footer
+      .${ROOT_CLASS}[data-style="compact"]
+      [data-column="3"]
+      .amplify-footer-meta {
+
+        justify-content:
+          ${justifyFor(
+            settings.column3Align
+          )}
+          !important;
+
+      }
+
+    `;
+
+
+    if (
+      lineSpacing !== null
+    ) {
+
+      css += `
+
+        footer.amplify-footer
+        .${ROOT_CLASS}[data-style="compact"]
+        .amplify-footer-contact-group
+        > *:not(:last-child)::after {
+
+          margin-left:
+            ${lineSpacing};
+
+          margin-right:
+            ${lineSpacing};
+
+        }
+
+
+        footer.amplify-footer
+        .${ROOT_CLASS}[data-style="compact"]
+        .amplify-footer-menu {
+
+          column-gap:
+            ${lineSpacing};
+
+          row-gap:
+            ${lineSpacing};
+
+        }
+
+      `;
+
+    }
+
+  }
+
+
+  /*
+   * ============================================================
+   * MOBILE
+   * ============================================================
+   */
+
+  css += `
+
+    @media (
+      max-width: 768px
+    ) {
+
+      footer.amplify-footer
+      .${ROOT_CLASS} {
+
+        grid-template-columns:
+          minmax(0, 1fr)
+          !important;
+
+      }
+
+
+      footer.amplify-footer
+      .${ROOT_CLASS}
+      .amplify-footer-layout-column {
+
+        width:
+          100%;
+
+      }
+
+
+      footer.amplify-footer
+      .${ROOT_CLASS}[data-style="compact"]
+      .amplify-footer-contact-group {
+
+        flex-direction:
+          column !important;
+
+      }
+
+
+      footer.amplify-footer
+      .${ROOT_CLASS}[data-style="compact"]
+      .amplify-footer-contact-group
+      > *::after {
+
+        display:
+          none !important;
+
+      }
+
+    }
+
+  `;
+
+
+  /*
+   * ============================================================
+   * APPLY CSS
+   * ============================================================
+   */
+
+  const style =
+    document.createElement(
+      "style"
+    );
+
+
+  style.id =
+    STYLE_ID;
+
+
+  style.textContent =
+    css;
+
+
+  if (isPreview) {
+
+    style.setAttribute(
+      "data-amplify-preview",
+      "1"
+    );
+
+  }
+
+
+  document.head.appendChild(
+    style
+  );
+
+  }
+
+
+  /*
+   * ============================================================
+   * INITIAL APPLY
+   * ============================================================
+   */
+
+  applyFooterLayout();
+
+
+  /*
+   * ============================================================
+   * EDITOR RE-RENDER SUPPORT
+   *
+   * Streamline can rebuild the footer after this body-end script has
+   * already run, especially when edit mode is activated. When that
+   * happens our custom layout disappears even though the saved settings
+   * are still present. Watch this document for that specific condition
+   * and reapply the saved footer automatically.
+   *
+   * The observer is deliberately narrow: it does not continually rebuild
+   * the footer. It only runs when a native footer exists AND our custom
+   * layout is missing.
+   * ============================================================
+   */
+
+  window.__amplifyFooterLayoutApply =
+    applyFooterLayout;
+
+
+  if (
+    window.__amplifyFooterLayoutObserver
+  ) {
+
+    try {
+      window.__amplifyFooterLayoutObserver.disconnect();
+    } catch (e) {
+      // Ignore an old/stale observer.
+    }
+
+  }
+
+
+  if (
+    window.__amplifyFooterLayoutTimer
+  ) {
+
+    clearTimeout(
+      window.__amplifyFooterLayoutTimer
+    );
+
+  }
+
+
+  const footerObserver =
+    new MutationObserver(function () {
+
+      if (
+        window.__amplifyFooterLayoutTimer
+      ) {
+
+        clearTimeout(
+          window.__amplifyFooterLayoutTimer
+        );
+
+      }
+
+
+      window.__amplifyFooterLayoutTimer =
+        setTimeout(function () {
+
+          const currentFooter =
+            document.querySelector(
+              "footer.amplify-footer"
+            );
+
+
+          if (!currentFooter) {
+            return;
+          }
+
+
+          const nativeFooter =
+            currentFooter.querySelector(
+              ".container.pure-g"
+            );
+
+
+          if (!nativeFooter) {
+            return;
+          }
+
+
+          const customFooter =
+            currentFooter.querySelector(
+              "." + ROOT_CLASS
+            );
+
+
+          /*
+           * If the editor replaced the footer, the native footer will be
+           * present again while our generated layout is gone. Re-run the
+           * exact same saved customization.
+           */
+
+          if (!customFooter) {
+
+            applyFooterLayout();
+
+          }
+
+        }, 175);
+
+    });
+
+
+  footerObserver.observe(
+    document.documentElement || document.body,
+    {
+      childList: true,
+      subtree: true
+    }
+  );
+
+
+  window.__amplifyFooterLayoutObserver =
+    footerObserver;
+
+
+  /*
+   * If this script is running in the editor shell rather than inside the
+   * site frame, the frame is same-origin. When the editor frame reloads,
+   * ask the copy of this script inside that frame to reapply itself. This
+   * is harmless on normal public pages where #amplify-frame does not exist.
+   */
+
+  const editorFrame =
+    document.querySelector(
+      "#amplify-frame"
+    );
+
+
+  if (editorFrame) {
+
+    editorFrame.addEventListener(
+      "load",
+      function () {
+
+        setTimeout(function () {
+
+          try {
+
+            const frameWindow =
+              editorFrame.contentWindow;
+
+
+            if (
+              frameWindow &&
+              typeof frameWindow.__amplifyFooterLayoutApply === "function"
+            ) {
+
+              frameWindow.__amplifyFooterLayoutApply();
+
+            }
+
+          } catch (e) {
+            // Same-origin is expected, but fail quietly if the editor changes.
+          }
+
+        }, 175);
+
+      }
+    );
+
+  }
+
+})();
+</script>

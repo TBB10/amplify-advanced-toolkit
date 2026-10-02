@@ -1,0 +1,255 @@
+<!-- title: Colorado Transparency Footer -->
+
+<!-- Transparency Footer -->
+<script>
+(function () {
+  const path = window.location.pathname;
+  const isHomepage = path === '/' || /\/homepage\/?$/.test(path);
+
+  // Only run on homepages, not internal or classic pages.
+  if (!isHomepage) {
+    return;
+  }
+
+  function runTransparencyFooter() {
+
+    if (typeof jQuery === 'undefined') {
+      console.error('[Transparency] jQuery failed to load.');
+      return;
+    }
+
+    jQuery(function ($) {
+
+      const footer = $('footer.amplify-footer').first();
+
+      if (!footer.length) {
+        console.warn('[Transparency] Footer element not found.');
+        return;
+      }
+
+      // Prevent duplicate insertion.
+      if ($('#transparency-footer-accordion').length) {
+        return;
+      }
+
+      // Read footer colors.
+      const computedStyles = getComputedStyle(footer[0]);
+
+      const bgColor =
+        computedStyles.getPropertyValue('--bg-color').trim() || '#ffffff';
+
+      const fgColor =
+        computedStyles.getPropertyValue('--fg-color').trim() || '#000000';
+
+      // Inject styling.
+      $('<style>', {
+        id: 'transparency-footer-styles',
+        type: 'text/css'
+      }).html(`
+
+        .footer-transparency-accordion {
+          margin: 20px 0 40px 0;
+          padding: 20px;
+          font-family: sans-serif;
+          background-color: ${bgColor};
+          color: ${fgColor};
+          border: 1px solid ${fgColor};
+        }
+
+        .footer-transparency-toggle {
+          display: flex;
+          width: 100%;
+          justify-content: space-between;
+          align-items: center;
+          gap: 20px;
+          padding: 20px 30px 20px 20px;
+          margin: 0;
+          border: 0;
+          background: transparent;
+          color: inherit;
+          cursor: pointer;
+          text-align: left;
+          font: inherit;
+        }
+
+        .footer-transparency-title {
+          margin: 0;
+          padding: 0;
+          flex-grow: 1;
+          font-size: 16px;
+          font-weight: normal;
+        }
+
+        .footer-transparency-icon {
+          font-size: 2rem;
+          font-weight: 100;
+          line-height: 1;
+          flex-shrink: 0;
+        }
+
+        .footer-transparency-content {
+          display: none;
+          margin-top: 20px;
+          overflow-x: auto;
+          padding: 0 30px 20px;
+          font-size: 14px;
+          text-transform: none;
+        }
+
+        .footer-transparency-content table {
+          width: 100%;
+          border-collapse: collapse;
+          background-color: transparent;
+        }
+
+        .footer-transparency-content th,
+        .footer-transparency-content td {
+          border: 1px solid ${fgColor};
+          padding: 10px;
+          text-align: left;
+        }
+
+        .footer-transparency-content a {
+          color: ${fgColor};
+        }
+
+      `).appendTo('head');
+
+      // Load transparency HTML.
+      $.get('/transparency.html', function (response) {
+
+        const reportContent = $('<div>')
+          .html(response)
+          .find('.wysiwym-transparency-report');
+
+        if (!reportContent.length) {
+          console.warn(
+            '[Transparency] .wysiwym-transparency-report not found in /transparency.html'
+          );
+          return;
+        }
+
+        // Only include these transparency report sections.
+        const allowedHeadings = [
+          'Board Members',
+          'Annual Meeting',
+          'Board Meetings',
+          'Overlapping Governmental Entities',
+          'Contact Procedures – Business & After Hours',
+          'Call for Nominations, Notice of Elections, and Election Results (if applicable)'
+        ];
+
+        const table = reportContent.find('table').first();
+
+        if (!table.length) {
+          console.warn(
+            '[Transparency] Transparency table not found in /transparency.html'
+          );
+          return;
+        }
+
+        table.find('> tbody > tr, > tr').each(function () {
+          const firstCellText = $(this)
+            .find('td, th')
+            .first()
+            .text()
+            .trim();
+
+          if (!allowedHeadings.includes(firstCellText)) {
+            $(this).remove();
+          }
+        });
+
+        // Content wrapper.
+        const $content = $('<div>', {
+          class: 'footer-transparency-content',
+          id: 'transparency-footer-content'
+        }).append(table);
+
+        // Icon.
+        const $icon = $('<span>', {
+          class: 'footer-transparency-icon',
+          text: '+',
+          'aria-hidden': 'true'
+        });
+
+        // Title.
+        const $title = $('<span>', {
+          class: 'footer-transparency-title',
+          text: 'Colorado Metro District Transparency Details'
+        });
+
+        // Native button for accessible toggle behavior.
+        const $toggle = $('<button>', {
+          type: 'button',
+          class: 'footer-transparency-toggle',
+          'aria-expanded': 'false',
+          'aria-controls': 'transparency-footer-content'
+        })
+          .append($title, $icon)
+          .on('click', function () {
+
+            const expanded =
+              $(this).attr('aria-expanded') === 'true';
+
+            $(this).attr(
+              'aria-expanded',
+              String(!expanded)
+            );
+
+            $icon.text(expanded ? '+' : '−');
+
+            $content.stop(true, true).slideToggle();
+          });
+
+        // Accordion container.
+        const $accordion = $('<div>', {
+          class: 'footer-transparency-accordion',
+          id: 'transparency-footer-accordion'
+        }).append($toggle, $content);
+
+        const $accordionWrapper = $('<div>', {
+          css: {
+            maxWidth: '1200px',
+            margin: '0 auto'
+          }
+        }).append($accordion);
+
+        // Inject into footer.
+        footer.prepend($accordionWrapper);
+
+      }).fail(function () {
+        console.error(
+          '[Transparency] Failed to load /transparency.html'
+        );
+      });
+
+    });
+  }
+
+  // Load jQuery if it is not already available.
+  if (typeof jQuery === 'undefined') {
+
+    const script = document.createElement('script');
+
+    script.src =
+      'https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js';
+
+    script.onload = runTransparencyFooter;
+
+    script.onerror = function () {
+      console.error(
+        '[Transparency] Unable to load jQuery.'
+      );
+    };
+
+    document.head.appendChild(script);
+
+  } else {
+
+    runTransparencyFooter();
+
+  }
+
+})();
+</script>

@@ -1,0 +1,751 @@
+<!-- title: Classic Catalog Search -->
+<!-- param: catalog_form type=textarea label="Original catalog <form> only — no script or style tags" rows=8 placeholder="Paste only the original <form>...</form>. Do not include <script>, <style>, <head>, or <body> tags." -->
+<!-- param: background type=color label="Search background" default=#276f73 -->
+<!-- param: text type=color label="Search text & button color" default=#ffffff -->
+<style>
+:root {
+  --classic-search-bg: {{background}};
+  --classic-search-text: {{text}};
+  --classic-search-border: {{background}};
+  --classic-search-focus: #f4b942;
+}
+
+.search-box,
+.header-search {
+  box-sizing: border-box !important;
+}
+
+.search-box .input-group,
+.header-search .input-group {
+  display: flex !important;
+  align-items: stretch !important;
+  width: auto !important;
+  height: 38px !important;
+  margin: 0 !important;
+  box-sizing: border-box !important;
+}
+
+.search-box input[type="text"],
+.search-box input[type="search"],
+.header-search input[type="text"],
+.header-search input[type="search"],
+#catalog-search,
+#site-search {
+  flex: 1 1 auto !important;
+  width: 180px !important;
+  min-width: 0 !important;
+  max-width: 180px !important;
+  height: 38px !important;
+  min-height: 38px !important;
+  max-height: 38px !important;
+  margin: 0 !important;
+  padding: 0 10px !important;
+  background-color: var(--classic-search-bg) !important;
+  color: var(--classic-search-text) !important;
+  -webkit-text-fill-color: var(--classic-search-text) !important;
+  border: 1px solid var(--classic-search-border) !important;
+  border-right: 0 !important;
+  border-radius: 4px 0 0 4px !important;
+  font-family: inherit !important;
+  font-size: 14px !important;
+  font-weight: 400 !important;
+  line-height: 38px !important;
+  appearance: none !important;
+  box-sizing: border-box !important;
+  box-shadow: none !important;
+}
+
+.search-box input::placeholder,
+.header-search input::placeholder,
+#catalog-search::placeholder,
+#site-search::placeholder {
+  color: var(--classic-search-text) !important;
+  -webkit-text-fill-color: var(--classic-search-text) !important;
+  opacity: 1 !important;
+}
+
+.search-box .input-group-btn,
+.header-search .input-group-btn {
+  display: flex !important;
+  flex: 0 0 auto !important;
+  align-items: stretch !important;
+  width: auto !important;
+  height: 38px !important;
+  margin: 0 0 0 -1px !important;
+  padding: 0 !important;
+  box-sizing: border-box !important;
+}
+
+.search-box button.btn.btn-default,
+.header-search button.btn.btn-default,
+.search-box .search-submit,
+.header-search .search-submit {
+  display: inline-flex !important;
+  flex: 0 0 auto !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: auto !important;
+  min-width: 60px !important;
+  height: 38px !important;
+  min-height: 38px !important;
+  max-height: 38px !important;
+  margin: 0 !important;
+  padding: 0 12px !important;
+  background-color: var(--classic-search-bg) !important;
+  color: var(--classic-search-text) !important;
+  -webkit-text-fill-color: var(--classic-search-text) !important;
+  border: 1px solid var(--classic-search-border) !important;
+  border-left: 0 !important;
+  border-radius: 0 4px 4px 0 !important;
+  font-family: inherit !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  line-height: 1 !important;
+  white-space: nowrap !important;
+  box-sizing: border-box !important;
+  box-shadow: none !important;
+}
+
+.search-box button.btn.btn-default:hover,
+.header-search button.btn.btn-default:hover,
+.search-box .search-submit:hover,
+.header-search .search-submit:hover {
+  filter: brightness(0.88);
+}
+
+.search-box input:focus-visible,
+.header-search input:focus-visible,
+.search-box button:focus-visible,
+.header-search button:focus-visible {
+  position: relative;
+  z-index: 2;
+  outline: 3px solid var(--classic-search-focus) !important;
+  outline-offset: 2px !important;
+}
+
+.search-box input:-webkit-autofill,
+.header-search input:-webkit-autofill {
+  -webkit-text-fill-color: var(--classic-search-text) !important;
+  box-shadow: 0 0 0 1000px var(--classic-search-bg) inset !important;
+}
+
+@media (max-width: 700px) {
+  #page-header .header-search {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    float: none !important;
+    position: static !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    margin: 0 auto !important;
+    padding: 0 12px !important;
+    box-sizing: border-box !important;
+  }
+
+  #page-header .header-search .classic-search-row {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    width: 100% !important;
+    max-width: 420px !important;
+    min-width: 0 !important;
+    margin: 0 auto !important;
+    padding: 0 !important;
+    box-sizing: border-box !important;
+  }
+
+  #page-header .header-search .classic-search-row .search-box {
+    display: block !important;
+    float: none !important;
+    position: static !important;
+    width: 100% !important;
+    max-width: none !important;
+    min-width: 0 !important;
+    margin: 0 0 8px !important;
+    padding: 0 !important;
+    box-sizing: border-box !important;
+  }
+
+  #page-header .header-search .classic-search-row .search-box:last-child {
+    margin-bottom: 0 !important;
+  }
+
+  #page-header .header-search .classic-search-row .input-group {
+    display: flex !important;
+    align-items: stretch !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    height: 32px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    box-sizing: border-box !important;
+  }
+
+  #page-header .header-search .classic-search-row input[type="text"],
+  #page-header .header-search .classic-search-row input[type="search"],
+  #page-header .header-search .classic-search-row #catalog-search,
+  #page-header .header-search .classic-search-row #site-search {
+    flex: 1 1 auto !important;
+    width: auto !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    height: 32px !important;
+    min-height: 32px !important;
+    max-height: 32px !important;
+    margin: 0 !important;
+    padding: 0 8px !important;
+    font-size: 13px !important;
+    line-height: 32px !important;
+    box-sizing: border-box !important;
+  }
+
+  #page-header .header-search .classic-search-row .input-group-btn {
+    display: flex !important;
+    flex: 0 0 auto !important;
+    align-items: stretch !important;
+    width: auto !important;
+    height: 32px !important;
+    margin: 0 0 0 -1px !important;
+    padding: 0 !important;
+    box-sizing: border-box !important;
+  }
+
+  #page-header .header-search .classic-search-row button.btn.btn-default,
+  #page-header .header-search .classic-search-row .search-submit {
+    flex: 0 0 auto !important;
+    width: auto !important;
+    min-width: 60px !important;
+    max-width: none !important;
+    height: 32px !important;
+    min-height: 32px !important;
+    max-height: 32px !important;
+    margin: 0 !important;
+    padding: 0 8px !important;
+    font-size: 12px !important;
+    line-height: 1 !important;
+    white-space: nowrap !important;
+    box-sizing: border-box !important;
+  }
+}
+</style>
+
+<style>
+.classic-catalog-toolkit-diagnostic {
+  position: fixed;
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  left: auto;
+  top: auto;
+  z-index: 2147483647;
+  width: min(420px, calc(100vw - 32px));
+  max-height: calc(100vh - 32px);
+  overflow: auto;
+  transform: none;
+  padding: 16px;
+  border: 2px solid #9b1c1c;
+  border-radius: 6px;
+  background: #ffffff;
+  color: #1f2937;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.28);
+  font: 14px/1.45 Arial, sans-serif;
+}
+
+.classic-catalog-toolkit-diagnostic strong {
+  display: block;
+  margin-bottom: 6px;
+  color: #7f1d1d;
+  font-size: 16px;
+}
+
+.classic-catalog-toolkit-diagnostic p {
+  margin: 0 0 10px;
+}
+
+.classic-catalog-toolkit-diagnostic button {
+  margin: 0 8px 0 0;
+  padding: 7px 10px;
+  border: 1px solid #374151;
+  border-radius: 4px;
+  background: #f3f4f6;
+  color: #111827;
+  cursor: pointer;
+  font: inherit;
+}
+
+.classic-catalog-toolkit-diagnostic button:hover {
+  background: #e5e7eb;
+}
+
+.classic-catalog-toolkit-diagnostic button:focus-visible {
+  outline: 3px solid #f4b942;
+  outline-offset: 2px;
+}
+</style>
+
+<script>
+(function () {
+  'use strict';
+
+
+  var sourceMarkup = `{{catalog_form}}`;
+  var diagnosticId = 'classic-catalog-toolkit-diagnostic';
+
+  function normalizeSource(value) {
+    return String(value || '')
+      .replace(/[“”]/g, '"')
+      .replace(/[‘’]/g, "'")
+      .replace(/\u00a0/g, ' ')
+      .trim();
+  }
+
+  function buildFixPrompt(errorMessage, normalizedMarkup) {
+    return [
+      'Convert the catalog search code below into one standard HTML GET form.',
+      '',
+      'Requirements:',
+      '- Return only one <form>...</form>.',
+      '- Do not include <script>, <style>, <head>, or <body>.',
+      '- Put the catalog URL in the form action attribute.',
+      '- Use method="get".',
+      '- Add target="_blank".',
+      '- The user-entered search input must have the correct name attribute.',
+      '- Convert every fixed URL parameter into a named hidden input.',
+      '- Use straight quotation marks, not smart quotes.',
+      '- Preserve every parameter required for the catalog search.',
+      '- Use placeholder="Search Catalog".',
+      '- Use aria-label="Search Catalog".',
+      '',
+      'The Streamline catalog-search tool reported this error:',
+      errorMessage,
+      '',
+      'Original code:',
+      normalizedMarkup || sourceMarkup
+    ].join('\n');
+  }
+
+  function getDiagnosticHost() {
+    try {
+      if (window.top && window.top.document && window.top.document.body) {
+        return {
+          win: window.top,
+          doc: window.top.document
+        };
+      }
+    } catch (error) {
+      // Fall back to the current document when the top window is cross-origin.
+    }
+
+    return {
+      win: window,
+      doc: document
+    };
+  }
+
+  function getDiagnosticState() {
+    var host = getDiagnosticHost();
+
+    if (!host.win.__streamlineClassicCatalogDiagnosticState) {
+      host.win.__streamlineClassicCatalogDiagnosticState = {
+        dismissedKey: '',
+        timer: null
+      };
+    }
+
+    return host.win.__streamlineClassicCatalogDiagnosticState;
+  }
+
+  function makeDiagnosticKey(errorMessage, normalizedMarkup) {
+    return String(errorMessage || '') + '\n---\n' + String(normalizedMarkup || '');
+  }
+
+  function diagnosticWasDismissed(errorMessage, normalizedMarkup) {
+    return getDiagnosticState().dismissedKey === makeDiagnosticKey(
+      errorMessage,
+      normalizedMarkup
+    );
+  }
+
+  function markDiagnosticDismissed(errorMessage, normalizedMarkup) {
+    getDiagnosticState().dismissedKey = makeDiagnosticKey(
+      errorMessage,
+      normalizedMarkup
+    );
+  }
+
+  function clearDismissedDiagnostic() {
+    getDiagnosticState().dismissedKey = '';
+  }
+
+  function removeDiagnostic() {
+    var host = getDiagnosticHost();
+    var state = getDiagnosticState();
+    var panels = host.doc.querySelectorAll(
+      '#classic-catalog-toolkit-diagnostic, .classic-catalog-toolkit-diagnostic'
+    );
+
+    if (state.timer) {
+      host.win.clearTimeout(state.timer);
+      state.timer = null;
+    }
+
+    Array.prototype.forEach.call(panels, function (panel) {
+      panel.remove();
+    });
+  }
+
+  function showDiagnostic(errorMessage, normalizedMarkup) {
+    var host = getDiagnosticHost();
+    var state = getDiagnosticState();
+
+    if (!host.doc.body || diagnosticWasDismissed(errorMessage, normalizedMarkup)) {
+      return;
+    }
+
+    var existingPanels = host.doc.querySelectorAll(
+      '#classic-catalog-toolkit-diagnostic, .classic-catalog-toolkit-diagnostic'
+    );
+
+    if (existingPanels.length) {
+      var matchingPanel = null;
+
+      Array.prototype.forEach.call(existingPanels, function (panel) {
+        var existingMessage = panel.querySelector('[data-catalog-diagnostic-message]');
+
+        if (!matchingPanel && existingMessage && existingMessage.textContent === errorMessage) {
+          matchingPanel = panel;
+        }
+      });
+
+      Array.prototype.forEach.call(existingPanels, function (panel) {
+        if (panel !== matchingPanel) {
+          panel.remove();
+        }
+      });
+
+      if (matchingPanel) {
+        return;
+      }
+    }
+
+    removeDiagnostic();
+
+    var panel = host.doc.createElement('section');
+    panel.id = diagnosticId;
+    panel.className = 'classic-catalog-toolkit-diagnostic';
+    panel.setAttribute('role', 'alert');
+    panel.setAttribute('aria-live', 'assertive');
+
+    var heading = host.doc.createElement('strong');
+    heading.textContent = 'Catalog search could not be installed';
+
+    var message = host.doc.createElement('p');
+    message.setAttribute('data-catalog-diagnostic-message', '');
+    message.textContent = errorMessage;
+
+    var copyButton = host.doc.createElement('button');
+    copyButton.type = 'button';
+    copyButton.textContent = 'Copy ChatGPT fix prompt';
+
+    var dismissButton = host.doc.createElement('button');
+    dismissButton.type = 'button';
+    dismissButton.textContent = 'Dismiss';
+
+    copyButton.addEventListener('click', function () {
+      var prompt = buildFixPrompt(errorMessage, normalizedMarkup);
+
+      if (host.win.navigator.clipboard && host.win.navigator.clipboard.writeText) {
+        host.win.navigator.clipboard.writeText(prompt).then(function () {
+          copyButton.textContent = 'Prompt copied';
+        }).catch(function () {
+          host.win.prompt('Copy this prompt:', prompt);
+        });
+      } else {
+        host.win.prompt('Copy this prompt:', prompt);
+      }
+    });
+
+    dismissButton.addEventListener('click', function () {
+      markDiagnosticDismissed(errorMessage, normalizedMarkup);
+      removeDiagnostic();
+    });
+
+    panel.appendChild(heading);
+    panel.appendChild(message);
+    panel.appendChild(copyButton);
+    panel.appendChild(dismissButton);
+    host.doc.body.appendChild(panel);
+
+    state.timer = host.win.setTimeout(function () {
+      markDiagnosticDismissed(errorMessage, normalizedMarkup);
+      removeDiagnostic();
+    }, 20000);
+
+    console.error('[Classic Catalog Search Toolkit] ' + errorMessage);
+  }
+
+  function validateCatalogForm() {
+    var original = String(sourceMarkup || '');
+    var normalized = normalizeSource(original);
+
+    if (/[“”‘’]/.test(original)) {
+      return {
+        ok: false,
+        error: 'The pasted form contains curly quotation marks. Replace them with normal straight quotes before saving.',
+        normalized: original.trim()
+      };
+    }
+
+    if (!normalized) {
+      return {
+        ok: false,
+        error: 'No catalog form was provided. Paste one complete <form>...</form> block.',
+        normalized: normalized
+      };
+    }
+
+    if (/<\s*(script|style|head|body)\b/i.test(normalized)) {
+      return {
+        ok: false,
+        error: 'The pasted code contains a script, style, head, or body tag. Paste the catalog <form> only.',
+        normalized: normalized
+      };
+    }
+
+    var doc = new DOMParser().parseFromString(normalized, 'text/html');
+    var forms = doc.querySelectorAll('form');
+
+    if (forms.length !== 1) {
+      return {
+        ok: false,
+        error: forms.length === 0
+          ? 'No usable <form> was found.'
+          : 'More than one <form> was found. Paste exactly one catalog search form.',
+        normalized: normalized
+      };
+    }
+
+    var sourceForm = forms[0];
+    var action = (sourceForm.getAttribute('action') || '').trim();
+    var method = (sourceForm.getAttribute('method') || 'get').trim().toLowerCase();
+
+    if (!action) {
+      return {
+        ok: false,
+        error: 'The form is missing an action URL. The catalog destination may be defined in a separate script.',
+        normalized: normalized
+      };
+    }
+
+    try {
+      new URL(action, window.location.href);
+    } catch (error) {
+      return {
+        ok: false,
+        error: 'The form action is not a valid URL.',
+        normalized: normalized
+      };
+    }
+
+    if (method !== 'get') {
+      return {
+        ok: false,
+        error: 'This tool requires a GET form. The pasted form uses method="' + method + '".',
+        normalized: normalized
+      };
+    }
+
+    var candidates = Array.prototype.filter.call(
+      sourceForm.querySelectorAll('input[type="search"], input[type="text"], input:not([type])'),
+      function (input) {
+        return !input.disabled && input.type !== 'hidden';
+      }
+    );
+
+    if (candidates.length === 0) {
+      return {
+        ok: false,
+        error: 'No user-entered text or search input was found.',
+        normalized: normalized
+      };
+    }
+
+    var sourceInput = candidates.find(function (input) {
+      return !!(input.getAttribute('name') || '').trim();
+    });
+
+    if (!sourceInput) {
+      return {
+        ok: false,
+        error: 'The search input is missing a name attribute, so the catalog cannot receive the search phrase.',
+        normalized: normalized
+      };
+    }
+
+    var hiddenInputs = Array.prototype.map.call(
+      sourceForm.querySelectorAll('input[type="hidden"][name]'),
+      function (input) {
+        return {
+          name: input.name,
+          value: input.value || ''
+        };
+      }
+    );
+
+    return {
+      ok: true,
+      normalized: normalized,
+      config: {
+        action: new URL(action, window.location.href).href,
+        method: 'get',
+        target: sourceForm.getAttribute('target') || '_blank',
+        queryName: sourceInput.name,
+        hiddenInputs: hiddenInputs
+      }
+    };
+  }
+
+
+  function buildCatalogForm(config) {
+    var form = document.createElement('form');
+    form.className = 'search-box';
+    form.action = config.action;
+    form.method = config.method;
+    form.target = config.target;
+    form.setAttribute('role', 'search');
+    form.setAttribute('aria-label', 'Search the library catalog');
+
+    var group = document.createElement('div');
+    group.className = 'input-group';
+
+    var label = document.createElement('label');
+    label.className = 'sr-only';
+    label.htmlFor = 'catalog-search';
+    label.textContent = 'Search Catalog:';
+
+    var input = document.createElement('input');
+    input.type = 'search';
+    input.id = 'catalog-search';
+    input.className = 'form-control';
+    input.name = config.queryName;
+    input.placeholder = 'Search Catalog';
+    input.setAttribute('aria-label', 'Search Catalog');
+
+    var buttonWrap = document.createElement('span');
+    buttonWrap.className = 'input-group-btn';
+
+    var button = document.createElement('button');
+    button.type = 'submit';
+    button.className = 'btn btn-default search-submit';
+    button.textContent = 'Go';
+
+    buttonWrap.appendChild(button);
+    group.appendChild(label);
+    group.appendChild(input);
+    group.appendChild(buttonWrap);
+    form.appendChild(group);
+
+    config.hiddenInputs.forEach(function (item) {
+      var hidden = document.createElement('input');
+      hidden.type = 'hidden';
+      hidden.name = item.name;
+      hidden.value = item.value;
+      form.appendChild(hidden);
+    });
+
+    form.addEventListener('submit', function (event) {
+      if (!input.value.trim()) {
+        event.preventDefault();
+        input.focus();
+      }
+    });
+
+    return form;
+  }
+
+  function addCatalogSearch(config) {
+    var headerSearch = document.querySelector('#page-header .header-search');
+
+    if (!headerSearch) {
+      return false;
+    }
+
+    if (headerSearch.querySelector('#catalog-search')) {
+      return true;
+    }
+
+    var websiteForm = headerSearch.querySelector('form.search-box');
+
+    if (!websiteForm) {
+      return false;
+    }
+
+    var websiteInput = websiteForm.querySelector('input[type="search"], input[type="text"]');
+
+    if (websiteInput) {
+      websiteInput.id = 'site-search';
+      websiteInput.placeholder = 'Search Website';
+      websiteInput.setAttribute('aria-label', 'Search Website');
+    }
+
+    var row = headerSearch.querySelector('.classic-search-row');
+
+    if (!row) {
+      row = document.createElement('div');
+      row.className = 'classic-search-row';
+      headerSearch.insertBefore(row, websiteForm);
+      row.appendChild(websiteForm);
+    }
+
+    row.insertBefore(buildCatalogForm(config), websiteForm);
+    return true;
+  }
+
+  function run() {
+    var validation = validateCatalogForm();
+
+    if (!validation.ok) {
+      showDiagnostic(validation.error, validation.normalized);
+      return;
+    }
+
+    clearDismissedDiagnostic();
+    removeDiagnostic();
+
+    if (addCatalogSearch(validation.config)) {
+      return;
+    }
+
+    var observer = new MutationObserver(function () {
+      if (addCatalogSearch(validation.config)) {
+        observer.disconnect();
+      }
+    });
+
+    observer.observe(document.documentElement, {
+      childList: true,
+      subtree: true
+    });
+
+    window.setTimeout(function () {
+      observer.disconnect();
+
+      if (!document.querySelector('#catalog-search')) {
+        showDiagnostic(
+          'The form is valid, but the Classic header website search could not be found on this page.',
+          validation.normalized
+        );
+      }
+    }, 15000);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', run, { once: true });
+  } else {
+    run();
+  }
+})();
+</script>

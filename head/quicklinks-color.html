@@ -1,0 +1,143 @@
+<!-- title: Quicklinks Icon Color -->
+<!-- param: color type=color label="Icon color" default="" -->
+
+<!--
+  SAVED FILTER
+  This is declarative so it works on the public site without JavaScript.
+-->
+<svg
+  id="amplify-quicklinks-tint-saved-svg"
+  data-color="{{color}}"
+  width="0"
+  height="0"
+  style="position:absolute;width:0;height:0;overflow:hidden"
+  aria-hidden="true"
+>
+  <filter id="amplify-quicklinks-tint-saved">
+    <feFlood flood-color="{{color}}"/>
+    <feComposite in2="SourceGraphic" operator="in"/>
+  </filter>
+</svg>
+
+<style>
+  /*
+   * Only apply the saved tint when an actual color exists.
+   * A blank value leaves the site's normal icons alone.
+   */
+  body:has(
+    #amplify-quicklinks-tint-saved-svg[data-color]:not([data-color=""])
+  )
+  .amplify-section-container .container header img {
+    filter: url(#amplify-quicklinks-tint-saved);
+  }
+</style>
+
+<!--
+  LIVE PREVIEW
+  The extension executes this script during preview.
+
+  The public site does not need this script in order for the saved
+  color above to work.
+-->
+<script>
+(function () {
+  const currentScript = document.currentScript;
+
+  const isPreview =
+    currentScript &&
+    currentScript.hasAttribute("data-amplify-preview");
+
+  /*
+   * On a normal public page load, stop here.
+   * The declarative SVG + CSS above handles the saved color.
+   */
+  if (!isPreview) {
+    return;
+  }
+
+  const selectedColor = "{{color}}".trim();
+
+  const previewSvgId = "amplify-quicklinks-tint-preview-svg";
+  const previewFilterId = "amplify-quicklinks-tint-preview";
+  const previewStyleId = "amplify-quicklinks-tint-preview-style";
+
+  /*
+   * Remove the previous temporary preview.
+   * This happens whenever the picker changes.
+   */
+  const previousSvg = document.getElementById(previewSvgId);
+  const previousStyle = document.getElementById(previewStyleId);
+
+  if (previousSvg) previousSvg.remove();
+  if (previousStyle) previousStyle.remove();
+
+  /*
+   * If no custom color is selected, override any SAVED filter
+   * during preview so we see the site's natural icon appearance.
+   */
+  if (!selectedColor) {
+    const resetStyle = document.createElement("style");
+
+    resetStyle.id = previewStyleId;
+    resetStyle.setAttribute("data-amplify-preview", "1");
+
+    resetStyle.textContent = `
+      .amplify-section-container .container header img {
+        filter: none !important;
+      }
+    `;
+
+    document.head.appendChild(resetStyle);
+    return;
+  }
+
+  /*
+   * Create a completely separate filter for Live Preview.
+   * This avoids collisions with the saved SVG filter.
+   */
+  const svgNS = "http://www.w3.org/2000/svg";
+
+  const svg = document.createElementNS(svgNS, "svg");
+
+  svg.id = previewSvgId;
+  svg.setAttribute("data-amplify-preview", "1");
+  svg.setAttribute("width", "0");
+  svg.setAttribute("height", "0");
+  svg.setAttribute("aria-hidden", "true");
+
+  svg.style.position = "absolute";
+  svg.style.width = "0";
+  svg.style.height = "0";
+  svg.style.overflow = "hidden";
+
+  const filter = document.createElementNS(svgNS, "filter");
+  filter.id = previewFilterId;
+
+  const flood = document.createElementNS(svgNS, "feFlood");
+  flood.setAttribute("flood-color", selectedColor);
+
+  const composite = document.createElementNS(svgNS, "feComposite");
+  composite.setAttribute("in2", "SourceGraphic");
+  composite.setAttribute("operator", "in");
+
+  filter.appendChild(flood);
+  filter.appendChild(composite);
+
+  svg.appendChild(filter);
+
+  const style = document.createElement("style");
+
+  style.id = previewStyleId;
+  style.setAttribute("data-amplify-preview", "1");
+
+  style.textContent = `
+    .amplify-section-container .container header img {
+      filter: url(#${previewFilterId}) !important;
+    }
+  `;
+
+  document.body.appendChild(svg);
+  document.head.appendChild(style);
+
+})();
+</script>
