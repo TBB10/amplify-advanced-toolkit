@@ -1,0 +1,978 @@
+<!-- title: Amplify File Search -->
+<script>
+(function () {
+  'use strict';
+
+  const NS = 'izzy-file-search';
+
+  const SEL = {
+    linkDialog: '[aria-label="File link dialog"]',
+    linkSearch:
+      'input[aria-label="Search by filename"], input[class*="DecoratedLink-module_fileDialogSearch"]',
+
+    addDialog: '[role="dialog"]',
+    fileList: '[class*="FileList-module_fileListContainer"]',
+    fileCard: '[aria-label="File card"]',
+    dropZone: '[class*="FileList-module_fileListDropZone"]'
+  };
+
+  const state = {
+    debounceTimer: null,
+    searchVersion: 0,
+
+    // Keeps track of files selected through our injected Add Files search.
+    selectedIds: new Set()
+  };
+
+
+  /* ============================================================
+     GRAPHQL QUERY
+     ============================================================ */
+
+  const GET_FILES_QUERY = `
+    query GetFiles(
+      $after: String,
+      $basenameContains: String,
+      $tagIds: [ID!],
+      $mimeTypeStartsWith: String,
+      $status: FileStatus,
+      $availabilityStatus: FileAvailabilityStatus
+    ) {
+      files(
+        after: $after
+        basenameContains: $basenameContains
+        tagIds: $tagIds
+        mimeTypeStartsWith: $mimeTypeStartsWith
+        status: $status
+        availabilityStatus: $availabilityStatus
+      ) {
+        totalCount
+        pageInfo {
+          hasNextPage
+          endCursor
+        }
+        edges {
+          node {
+            id
+            basename
+            friendlyUrl
+            friendlyMimeType
+            availabilityStatus
+          }
+        }
+      }
+    }
+  `;
+
+
+  /* ============================================================
+     AMPLIFY IFRAME
+     ============================================================ */
+
+  function getContext() {
+    try {
+      const frame = document.getElementById('amplify-frame');
+
+      if (
+        frame &&
+        frame.contentDocument &&
+        frame.contentDocument.body &&
+        frame.contentWindow
+      ) {
+        return {
+          doc: frame.contentDocument,
+          win: frame.contentWindow
+        };
+      }
+    } catch (err) {
+      return null;
+    }
+
+    return {
+      doc: document,
+      win: window
+    };
+  }
+
+
+  /* ============================================================
+     STYLES
+     ============================================================ */
+
+  function ensureStyles(doc) {
+    if (doc.getElementById(NS + '-styles')) {
+      return;
+    }
+
+    const style = doc.createElement('style');
+    style.id = NS + '-styles';
+
+    style.textContent = `
+      .${NS}-label {
+        display: block;
+        margin: 0 0 5px;
+        font-size: 13px;
+        font-weight: 600;
+        color: #222;
+      }
+
+      .${NS}-input {
+        display: block;
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+        min-height: 38px;
+        padding: 7px 9px;
+        font: inherit;
+      }
+
+      .${NS}-input:focus-visible,
+      .${NS}-result:focus-visible {
+        outline: 2px solid currentColor !important;
+        outline-offset: 2px !important;
+      }
+
+      .${NS}-add-wrap {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 10px 0;
+      }
+
+      .${NS}-status {
+        min-height: 1em;
+        margin: 5px 0 0;
+        font-size: 13px;
+        color: #555;
+      }
+
+      .${NS}-results {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        width: 100%;
+        margin-top: 8px;
+      }
+
+      .${NS}-result {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+
+        width: 100%;
+        min-height: 40px;
+        box-sizing: border-box;
+
+        padding: 8px 10px;
+
+        border: 1px solid #ccc;
+        border-radius: 4px;
+
+        background: #fff;
+        color: inherit;
+
+        font: inherit;
+        text-align: left;
+        cursor: pointer;
+      }
+
+      .${NS}-result:hover {
+        background: #f5f5f5;
+      }
+
+      .${NS}-result-name {
+        min-width: 0;
+        overflow-wrap: anywhere;
+      }
+
+      .${NS}-result-state {
+        flex: 0 0 auto;
+        font-size: 12px;
+        font-weight: 600;
+      }
+
+      .${NS}-result[aria-pressed="true"] {
+        border-width: 2px;
+        font-weight: 600;
+      }
+
+      @media (max-width: 767px) {
+        .${NS}-result {
+          align-items: flex-start;
+          flex-direction: column;
+          gap: 4px;
+        }
+      }
+    `;
+
+    doc.head.appendChild(style);
+  }
+
+
+  /* ============================================================
+     LINK TO FILE
+     KEEP THE VERSION THAT ALREADY WORKS
+     ============================================================ */
+
+  function patchLinkToFile(doc) {
+    const dialog = doc.querySelector(SEL.linkDialog);
+
+    if (!dialog) {
+      return;
+    }
+
+    const input = dialog.querySelector(SEL.linkSearch);
+
+    if (!input) {
+      return;
+    }
+
+    ensureStyles(doc);
+
+    /*
+      Keep the dialog from being pushed above the viewport
+      once the file list begins loading.
+    */
+    dialog.style.setProperty('position', 'fixed', 'important');
+    dialog.style.setProperty('top', '20px', 'important');
+    dialog.style.setProperty('bottom', 'auto', 'important');
+    dialog.style.setProperty('left', '50%', 'important');
+    dialog.style.setProperty(
+      'transform',
+      'translateX(-50%)',
+      'important'
+    );
+
+    dialog.style.setProperty(
+      'max-height',
+      'calc(100vh - 40px)',
+      'important'
+    );
+
+    dialog.style.setProperty(
+      'overflow-y',
+      'auto',
+      'important'
+    );
+
+    dialog.style.setProperty(
+      'overflow-x',
+      'hidden',
+      'important'
+    );
+
+    dialog.style.setProperty(
+      'justify-content',
+      'flex-start',
+      'important'
+    );
+
+    dialog.style.setProperty(
+      'margin',
+      '0',
+      'important'
+    );
+
+    input.classList.add(NS + '-input');
+
+    if (!input.id) {
+      input.id = NS + '-link-input';
+    }
+
+    if (
+      !dialog.querySelector(
+        '.' + NS + '-link-label'
+      )
+    ) {
+      const label = doc.createElement('label');
+
+      label.className =
+        NS + '-label ' + NS + '-link-label';
+
+      label.htmlFor = input.id;
+      label.textContent = 'Search by filename';
+
+      input.insertAdjacentElement(
+        'beforebegin',
+        label
+      );
+    }
+  }
+
+
+  /* ============================================================
+     ADD YOUR FILES DIALOG
+     ============================================================ */
+
+  function findAddFilesDialog(doc) {
+    return (
+      Array.from(
+        doc.querySelectorAll(SEL.addDialog)
+      ).find(function (dialog) {
+        const heading = dialog.querySelector('h2');
+
+        return (
+          heading &&
+          heading.textContent.trim() ===
+            'Add Your Files'
+        );
+      }) || null
+    );
+  }
+
+
+  /* ============================================================
+     READ STREAMLINE'S REAL onFileClick CALLBACK
+     ============================================================ */
+
+  function getNativeOnFileClick(modal) {
+    const card = modal.querySelector(
+      SEL.fileCard
+    );
+
+    if (!card) {
+      return null;
+    }
+
+    const fiberKey = Object.keys(card).find(
+      function (key) {
+        return (
+          key.startsWith(
+            '__reactInternalInstance$'
+          ) ||
+          key.startsWith(
+            '__reactFiber$'
+          )
+        );
+      }
+    );
+
+    if (!fiberKey) {
+      return null;
+    }
+
+    let fiber = card[fiberKey];
+
+    /*
+      Walk upward until we find the FileCard component
+      whose props contain:
+
+        filename
+        id
+        friendlyUrl
+        selected
+        onFileClick
+    */
+    for (
+      let level = 0;
+      fiber && level < 10;
+      level++
+    ) {
+      const props = fiber.memoizedProps;
+
+      if (
+        props &&
+        typeof props === 'object' &&
+        typeof props.onFileClick ===
+          'function'
+      ) {
+        return props.onFileClick;
+      }
+
+      fiber = fiber.return;
+    }
+
+    return null;
+  }
+
+
+  /* ============================================================
+     XSRF TOKEN
+     ============================================================ */
+
+  function getCookie(doc, name) {
+    if (!doc.cookie) {
+      return null;
+    }
+
+    const prefix = name + '=';
+
+    const cookie = doc.cookie
+      .split('; ')
+      .find(function (item) {
+        return item.startsWith(prefix);
+      });
+
+    if (!cookie) {
+      return null;
+    }
+
+    const value = cookie.slice(
+      prefix.length
+    );
+
+    try {
+      return decodeURIComponent(value);
+    } catch (err) {
+      return value;
+    }
+  }
+
+  function getXsrfToken(doc) {
+    const names = [
+      'XSRF-TOKEN',
+      'xsrf-token',
+      'XSRF_TOKEN',
+      'CSRF-TOKEN',
+      'csrf-token'
+    ];
+
+    for (const name of names) {
+      const value = getCookie(doc, name);
+
+      if (value) {
+        return value;
+      }
+    }
+
+    return null;
+  }
+
+
+  /* ============================================================
+     INDEPENDENT SERVER-SIDE FILE SEARCH
+     ============================================================ */
+
+  async function searchFiles(
+    context,
+    searchTerm
+  ) {
+    const headers = {
+      Accept: '*/*',
+      'Content-Type': 'application/json'
+    };
+
+    const xsrf = getXsrfToken(
+      context.doc
+    );
+
+    if (xsrf) {
+      headers['X-XSRF-TOKEN'] = xsrf;
+    }
+
+    const response =
+      await context.win.fetch(
+        '/api/graphql',
+        {
+          method: 'POST',
+
+          credentials: 'include',
+
+          headers: headers,
+
+          body: JSON.stringify({
+            operationName: 'GetFiles',
+
+            variables: {
+              after: null,
+              basenameContains: searchTerm
+            },
+
+            query: GET_FILES_QUERY
+          })
+        }
+      );
+
+    if (!response.ok) {
+      throw new Error(
+        'File search returned HTTP ' +
+          response.status
+      );
+    }
+
+    const json =
+      await response.json();
+
+    if (json.errors) {
+      throw new Error(
+        json.errors
+          .map(function (error) {
+            return error.message;
+          })
+          .join('; ')
+      );
+    }
+
+    const connection =
+      json &&
+      json.data &&
+      json.data.files;
+
+    if (!connection) {
+      return [];
+    }
+
+    return connection.edges.map(
+      function (edge) {
+        return edge.node;
+      }
+    );
+  }
+
+
+  /* ============================================================
+     SELECT / DESELECT USING STREAMLINE'S OWN CALLBACK
+     ============================================================ */
+
+  function setNativeSelection(
+    modal,
+    file,
+    selected
+  ) {
+    const onFileClick =
+      getNativeOnFileClick(modal);
+
+    if (!onFileClick) {
+      throw new Error(
+        'Streamline native file selection callback was not found.'
+      );
+    }
+
+    /*
+      Confirmed native signature:
+
+      onFileClick(
+        filename,
+        selected,
+        id,
+        friendlyUrl
+      )
+    */
+    onFileClick(
+      file.basename,
+      selected,
+      file.id,
+      file.friendlyUrl
+    );
+  }
+
+
+  /* ============================================================
+     RESULT UI
+     ============================================================ */
+
+  function createResultButton(
+    context,
+    modal,
+    file,
+    status
+  ) {
+    const button =
+      context.doc.createElement(
+        'button'
+      );
+
+    button.type = 'button';
+    button.className =
+      NS + '-result';
+
+    button.setAttribute(
+      'aria-pressed',
+      state.selectedIds.has(file.id)
+        ? 'true'
+        : 'false'
+    );
+
+    const name =
+      context.doc.createElement(
+        'span'
+      );
+
+    name.className =
+      NS + '-result-name';
+
+    name.textContent =
+      file.basename;
+
+    const selectedState =
+      context.doc.createElement(
+        'span'
+      );
+
+    selectedState.className =
+      NS + '-result-state';
+
+    function syncLabel() {
+      const selected =
+        state.selectedIds.has(
+          file.id
+        );
+
+      button.setAttribute(
+        'aria-pressed',
+        selected
+          ? 'true'
+          : 'false'
+      );
+
+      selectedState.textContent =
+        selected
+          ? 'Selected'
+          : 'Select';
+
+      button.setAttribute(
+        'aria-label',
+        (selected
+          ? 'Deselect file '
+          : 'Select file ') +
+          file.basename
+      );
+    }
+
+    syncLabel();
+
+    button.appendChild(name);
+    button.appendChild(
+      selectedState
+    );
+
+    button.addEventListener(
+      'click',
+      function () {
+        try {
+          const currentlySelected =
+            state.selectedIds.has(
+              file.id
+            );
+
+          const nextSelected =
+            !currentlySelected;
+
+          setNativeSelection(
+            modal,
+            file,
+            nextSelected
+          );
+
+          if (nextSelected) {
+            state.selectedIds.add(
+              file.id
+            );
+
+            status.textContent =
+              file.basename +
+              ' selected. Use the existing Save button when ready.';
+          } else {
+            state.selectedIds.delete(
+              file.id
+            );
+
+            status.textContent =
+              file.basename +
+              ' deselected.';
+          }
+
+          syncLabel();
+        } catch (err) {
+          console.error(
+            '[izzy-file-search]',
+            err
+          );
+
+          status.textContent =
+            'Could not update the file selection.';
+        }
+      }
+    );
+
+    return button;
+  }
+
+  function renderSearchResults(
+    context,
+    modal,
+    files,
+    results,
+    status
+  ) {
+    results.replaceChildren();
+
+    if (!files.length) {
+      status.textContent =
+        'No matching files found.';
+      return;
+    }
+
+    status.textContent =
+      files.length +
+      ' matching file' +
+      (files.length === 1
+        ? ''
+        : 's') +
+      ' found.';
+
+    files.forEach(function (file) {
+      results.appendChild(
+        createResultButton(
+          context,
+          modal,
+          file,
+          status
+        )
+      );
+    });
+  }
+
+
+  /* ============================================================
+     INSERT SEARCH UI INTO ADD YOUR FILES
+     ============================================================ */
+
+  function patchAddFiles(context) {
+    const doc = context.doc;
+
+    const modal =
+      findAddFilesDialog(doc);
+
+    if (!modal) {
+      return;
+    }
+
+    ensureStyles(doc);
+
+    const fileList =
+      modal.querySelector(
+        SEL.fileList
+      );
+
+    if (!fileList) {
+      return;
+    }
+
+    /*
+      Already installed in this modal.
+    */
+    if (
+      modal.querySelector(
+        '.' + NS + '-add-wrap'
+      )
+    ) {
+      return;
+    }
+
+    /*
+      We need at least one native card loaded so we can
+      retrieve Streamline's real onFileClick callback.
+    */
+    if (
+      !modal.querySelector(
+        SEL.fileCard
+      )
+    ) {
+      return;
+    }
+
+    const nativeHandler =
+      getNativeOnFileClick(modal);
+
+    if (!nativeHandler) {
+      return;
+    }
+
+    const wrap =
+      doc.createElement('div');
+
+    wrap.className =
+      NS + '-add-wrap';
+
+    const label =
+      doc.createElement('label');
+
+    label.className =
+      NS + '-label';
+
+    label.textContent =
+      'Search existing files';
+
+    const input =
+      doc.createElement('input');
+
+    input.type = 'search';
+
+    input.id =
+      NS + '-add-search';
+
+    input.className =
+      NS + '-input';
+
+    input.autocomplete =
+      'off';
+
+    input.placeholder =
+      'Type part of a filename';
+
+    label.htmlFor =
+      input.id;
+
+    const status =
+      doc.createElement('p');
+
+    status.className =
+      NS + '-status';
+
+    status.setAttribute(
+      'role',
+      'status'
+    );
+
+    status.setAttribute(
+      'aria-live',
+      'polite'
+    );
+
+    const results =
+      doc.createElement('div');
+
+    results.className =
+      NS + '-results';
+
+    wrap.appendChild(label);
+    wrap.appendChild(input);
+    wrap.appendChild(status);
+    wrap.appendChild(results);
+
+    /*
+      Put our search immediately below the upload/drop zone.
+    */
+    const dropZone =
+      fileList.querySelector(
+        SEL.dropZone
+      );
+
+    if (dropZone) {
+      dropZone.insertAdjacentElement(
+        'afterend',
+        wrap
+      );
+    } else {
+      fileList.prepend(wrap);
+    }
+
+
+    /* ----------------------------------------------------------
+       SEARCH EVENT
+       ---------------------------------------------------------- */
+
+    input.addEventListener(
+      'input',
+      function () {
+        window.clearTimeout(
+          state.debounceTimer
+        );
+
+        const term =
+          input.value.trim();
+
+        const version =
+          ++state.searchVersion;
+
+        results.replaceChildren();
+
+        if (!term) {
+          status.textContent = '';
+          return;
+        }
+
+        if (term.length < 2) {
+          status.textContent =
+            'Enter at least 2 characters.';
+          return;
+        }
+
+        status.textContent =
+          'Searching files…';
+
+        state.debounceTimer =
+          window.setTimeout(
+            async function () {
+              try {
+                const files =
+                  await searchFiles(
+                    context,
+                    term
+                  );
+
+                /*
+                  User typed something else before this
+                  request finished. Ignore stale response.
+                */
+                if (
+                  version !==
+                  state.searchVersion
+                ) {
+                  return;
+                }
+
+                renderSearchResults(
+                  context,
+                  modal,
+                  files,
+                  results,
+                  status
+                );
+              } catch (err) {
+                console.error(
+                  '[izzy-file-search]',
+                  err
+                );
+
+                status.textContent =
+                  'File search could not be completed.';
+              }
+            },
+            300
+          );
+      }
+    );
+  }
+
+
+  /* ============================================================
+     SAFE POLLING
+
+     Deliberately boring:
+     - no MutationObservers
+     - no global fetch override
+     - no messing with pagination
+     ============================================================ */
+
+  function tick() {
+    const context =
+      getContext();
+
+    if (
+      !context ||
+      !context.doc ||
+      !context.doc.body
+    ) {
+      return;
+    }
+
+    patchLinkToFile(
+      context.doc
+    );
+
+    patchAddFiles(
+      context
+    );
+  }
+
+  tick();
+
+  window.setInterval(
+    tick,
+    500
+  );
+
+})();
+</script>
