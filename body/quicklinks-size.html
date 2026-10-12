@@ -4,12 +4,31 @@
 <!-- param: maxwidth type=number label="Max width" unit=rem min=1 max=20 step=0.5 default=6 -->
 <!-- param: maxheight type=number label="Max height" unit=rem min=1 max=20 step=0.5 default=6 -->
 <!-- param: margin type=number label="Margin" unit=rem min=0 max=5 step=0.25 default=0.5 -->
-<style>
-.amplify-section-container .container header img {
-  width: {{width}}rem;
-  max-width: {{maxwidth}}rem;
-  height: {{height}}rem;
-  max-height: {{maxheight}}rem;
-  margin: {{margin}}rem;
-}
-</style>
+<script>
+(function () {
+  var STYLE_ID = 'amplify-quicklinks-size-style';
+
+  function run() {
+    var old = document.getElementById(STYLE_ID);
+    if (old) old.remove();
+
+    var style = document.createElement('style');
+    style.id = STYLE_ID;
+    style.textContent =
+      '.amplify-section-container .container header img {' +
+      'width: {{width}}rem;' +
+      'max-width: {{maxwidth}}rem;' +
+      'height: {{height}}rem;' +
+      'max-height: {{maxheight}}rem;' +
+      'margin: {{margin}}rem;' +
+      '}';
+    document.head.appendChild(style);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', run);
+  } else {
+    run();
+  }
+})();
+</script>
