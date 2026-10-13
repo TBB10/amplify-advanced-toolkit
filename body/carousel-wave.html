@@ -1,5 +1,6 @@
 <!-- title: Carousel Wave -->
 <!-- param: color type=color label="Wave color" default=#1978BE -->
+<!-- param: cta_margin_bottom type=range label="CTA button bottom spacing" unit=rem min=0 max=5 step=0.25 default=1 -->
 <style>
 /* Apply only on desktop screens (min-width 1024px) */
 @media screen and (min-width: 1024px) {
@@ -99,5 +100,5 @@
 /* responsive height */
 @media (max-width: 991px){ #carousel-bleed-wave { height: 80px; } }
 @media (max-width: 575px){ #carousel-bleed-wave { height: 60px; } }
-.splide__slide .carousel-slide-content a .btn-pill { margin-top: 1.5rem; color: #fff; border-color: #fff; margin-bottom: .75rem !important; }
+.splide__slide .carousel-slide-content a .btn-pill { margin-top: 1.5rem; color: #fff; border-color: #fff; margin-bottom: {{cta_margin_bottom}}rem !important; }
 </style>
