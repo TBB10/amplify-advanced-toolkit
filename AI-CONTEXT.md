@@ -12,13 +12,15 @@ every page of a website — either right before `</head>` or right before
 `</body>`. Staff toggle snippets on/off from the extension popup and can adjust
 any values the file declares as parameters.
 
-Snippet files live in a GitHub repository, in exactly two folders:
+Snippet files live in this GitHub repository, in exactly two folders:
 
 - `head/` — injected before `</head>`
 - `body/` — injected before `</body>`
 
 Pushing a file to either folder publishes it to every staff member's extension.
-Nothing else in the repository should be touched; only `head/` and `body/`.
+The repository contains only these two folders plus documentation; the
+extension's own code is maintained elsewhere and is not something you can
+change from here. Only ever create or edit files in `head/` and `body/`.
 
 ## Your output
 
