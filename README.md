@@ -369,6 +369,11 @@ snippet file, follow these steps and output a single `.html` file:
 
 - Load unpacked: `chrome://extensions` → Developer mode → Load unpacked →
   select this folder. Reload after code changes.
+- The checkout is deliberately the **DEV** build: orange icon with a dark
+  corner ribbon and "(DEV)" in the name, so it's easy to tell apart from the
+  blue Chrome Web Store copy when both are installed. `package.sh` swaps in the
+  store icons (`icons/store/`) and strips "(DEV)" when it builds the release
+  zip, so the dev look never ships.
 - To test snippets before they land on `main`, push them to a branch (or a
   fork) and point `lib/config.js` at it, then Sync. Switch it back before
   packaging.
