@@ -386,6 +386,17 @@ function isSupported(url) {
   }
 }
 
+// Site Recovery works on any normal website (including custom-domain
+// Streamline sites). The rest of the toolkit stays limited to *.specialdistrict.org.
+function isRecoverySupported(url) {
+  try {
+    const p = new URL(url);
+    return p.protocol === "http:" || p.protocol === "https:";
+  } catch (e) {
+    return false;
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Site Recovery. Streamline treats ?no_custom_html on any page URL as
 // "load this page with the custom Head/Body HTML disabled", which is the
@@ -448,8 +459,9 @@ function renderRecoveryTools(tab) {
     els.recoveryLauncher.hidden = expanded;
     els.recoveryCard.hidden = !expanded;
   };
-  setExpanded(active);
-  els.recoveryHide.hidden = active;
+  const alwaysOpen = active || !isSupported(tab.url || "");
+  setExpanded(alwaysOpen);
+  els.recoveryHide.hidden = alwaysOpen;
 
   els.recoveryLauncher.onclick = () => setExpanded(true);
   els.recoveryHide.onclick = () => setExpanded(false);
@@ -1299,15 +1311,20 @@ async function init() {
   }
   tabId = tab.id;
 
+  // Site Recovery is available on any normal website, including custom domains.
+  if (tab.url && isRecoverySupported(tab.url)) {
+    renderRecoveryTools(tab);
+  }
+
+  // Everything below stays limited to *.specialdistrict.org.
   if (!isSupported(tab.url || "")) {
     setStatus(
-      "Open your Streamline site (a *.specialdistrict.org tab) and reopen this popup.",
-      "warn"
+      "Site Recovery is available for this domain. The rest of the Toolkit is available on *.specialdistrict.org sites.",
+      "info"
     );
     return;
   }
   siteKey = "pending:" + new URL(tab.url).hostname;
-  renderRecoveryTools(tab);
 
   await loadCollapsed();
   const haveLibrary = await loadLibrary();

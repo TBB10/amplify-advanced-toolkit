@@ -29,7 +29,9 @@ button at the bottom of the popup reloads the current page with
 `?no_custom_html` appended, which tells Streamline to load the page with all
 custom Head/Body HTML disabled. Nothing is removed from the saved settings — it
 only affects that page load — so you can open the toolkit, uncheck the bad
-snippet, Save, and use "Return to Normal Site" to go back.
+snippet, Save, and use "Return to Normal Site" to go back. Site Recovery works
+on any website, including Streamline sites on custom domains. The snippet
+controls still require a `*.specialdistrict.org` tab.
 
 **Sync.** The **Sync** button (bottom right, with a "Synced 2 days ago" label)
 pulls the latest snippets from this repo on demand. The extension also
