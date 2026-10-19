@@ -9,7 +9,12 @@ not type six hex codes by hand. The workflow should be: open the snippet, click
 once to pull the colors the site is already using into the pickers, adjust,
 Save.
 
-## What we built with existing tooling
+## Is the snippet waiting on this?
+No — convenience. The clean snippet is pushed as
+`head/quicklinks-template-colors.html` and fully works; this would make it
+faster to use.
+
+## What exists today
 `head/quicklinks-template-colors.html` — six `type=color` params with
 `default=""` so each rule stays inert until a color is set. Fully functional;
 the designer just has to find and type each color manually.
@@ -31,7 +36,11 @@ The popup shows an eyedropper button next to that picker. Clicking it reads
 fills the picker with the hex value. When two or more params on a snippet have
 `detect`, also show a single "Detect all" action. Any snippet can use it.
 
-## Example
+Other snippets that would use it: Secondary Nav Button (sample the site's
+existing nav colors), Social Link Icons, Quicklinks Color — any snippet that
+recolors something the site already renders.
+
+## Example / draft snippet
 ```html
 <!-- param: iconbg type=color label="Icon circle" default="" detect=".amplify-quicklinks-container article .icon|background-color" -->
 ```

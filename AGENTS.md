@@ -34,9 +34,10 @@ request is to tell them apart:
    Store. For these you write a request file into `requests/` (Part C) and the
    user Slacks Thomas.
 
-Most asks are snippets, or a snippet plus a small request. Say which part is
-which — "we can build this part; this part needs Thomas" — then do the snippet
-part now.
+Most asks are snippets, or a snippet plus a request. Say which part is which —
+"we can build this part; this part needs Thomas" — then follow the ordering
+rule in "Which comes first" below. Building the snippet first is **not** the
+default.
 
 ---
 
@@ -111,6 +112,34 @@ in the extension once.
 - If you're unsure whether something exists, re-read the table above and Part
   B. Do not assume a feature is missing because you haven't seen it used.
 
+## Which comes first: the snippet or the request?
+
+When an ask needs an extension feature, decide this before writing any file:
+
+**Can the snippet do its job without the missing capability?**
+
+- **No — the capability is essential** (the snippet would be broken,
+  misleading, or built around a hack you'd later rip out): **request first,
+  snippet after it ships.** Write the request now and put your full draft of
+  the snippet *inside the request file* as a code block (the "Example"
+  section), so Thomas designs the tool against a real use case. Do **not**
+  push the snippet to `head/` or `body/`. The user can keep the draft in their
+  Local Testing folder to iterate on. Once the new version ships, finish the
+  snippet against the real syntax and push it.
+- **Yes — the capability is only a convenience** (the snippet is fully useful
+  today; the tool would just make it nicer or faster to use): push the
+  **clean** snippet now, and write the request alongside it. When the tool
+  ships, add the new attribute/type to the snippet in a follow-up edit.
+
+In both cases, one hard line: **never push a snippet that references tooling
+that doesn't exist yet** — no placeholder params, no invented `type=` values,
+no "this will work once Thomas builds X." Pushed files go live to everyone on
+their next Sync, and unknown metadata renders as a broken control.
+
+Thomas builds tools for multiple use cases, not one snippet, so the shipped
+syntax may differ from what the request proposed. Expect to adapt the snippet
+to the real thing rather than the other way around.
+
 ## Where things live (and what you may touch)
 
 ```
@@ -127,7 +156,9 @@ cannot change it from here.
 
 For the snippet part: produce **one complete `.html` file**, state **which
 folder it belongs in** and **its exact filename**, in a single code block with
-no commentary inside. Then briefly list the params you declared and why.
+no commentary inside. Then briefly list the params you declared and why. If
+"Which comes first" says the snippet must wait for tooling, deliver it as a
+draft inside the request file instead of as a pushable snippet, and say so.
 
 For any extension part: produce a request file per Part C and tell the user to
 Slack Thomas with the filename.
@@ -437,13 +468,15 @@ request file and tell them to Slack Thomas.
 ## Before writing a request
 
 1. Re-check Part A's table and Part B. Many "missing" features exist.
-2. Separate the ask: build the snippet portion now with existing tooling,
-   leaving a clear gap for the requested capability (e.g. the param exists but
-   has to be filled by hand until the feature ships).
+2. Apply "Which comes first" (Part A). If the capability is essential, the
+   snippet is a *draft inside the request*, not a pushed file. If it's a
+   convenience, push the clean snippet (no references to the unshipped tool)
+   and request alongside.
 3. Think **general**. The request should describe a reusable capability that
    any snippet could use, phrased as a param type/attribute or a popup
    behavior — not a one-snippet special case. `detect=` is the model: one
-   attribute, every color param can use it.
+   attribute, every color param can use it. Mention other snippets (existing
+   or likely) that would benefit; that's what justifies building a tool.
 
 ## Writing the request
 

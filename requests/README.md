@@ -9,13 +9,22 @@ code and ships changes through the Chrome Web Store.
 1. You (or your AI assistant, following `AGENTS.md` Part C) write one
    Markdown file per capability: `requests/<kebab-case-title>.md`, using
    `_template.md`.
-2. Build whatever part of the ask *is* a snippet with existing tooling, and
-   push both together.
+2. Decide whether the snippet is **waiting on** the capability:
+   - **Essential** (snippet can't do its job without it): don't push the
+     snippet. Put the full draft inside the request so Thomas designs against
+     a real use case. Keep iterating on it in your Local Testing folder.
+   - **Convenience** (snippet is fully useful today): push the clean snippet —
+     with no references to the unshipped tool — and the request together.
 3. Slack Thomas with the filename.
-4. Thomas builds it into the extension, releases a new version, and updates the
+4. Thomas builds it as a general tool, releases a new version, and updates the
    request's `Status:` to `done` (with the version) or `declined` (with why).
-5. Once your extension has updated, revise the snippet to use the new
-   capability.
+   The shipped syntax may differ from what was proposed.
+5. Once your extension has updated, build or revise the snippet against the
+   real capability and push it.
+
+Never push a snippet that references tooling that doesn't exist yet. It goes
+live to everyone on their next Sync, and unknown metadata renders as a broken
+control.
 
 ## What makes a good request
 

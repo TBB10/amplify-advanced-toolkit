@@ -20,9 +20,16 @@ repo and is maintained separately by Thomas. If you need the extension to do
 something new — a new kind of control, a change to how preview or Save works,
 the popup reading something off the page — that's an **extension feature**:
 write it up as a file in [`requests/`](requests/) (there's a template and a
-worked example) and Slack Thomas. He builds it, ships a new version, and you
-update your snippet to use it. Most asks split into "snippet part now, request
-for the rest"; `AGENTS.md` Part A explains how to tell them apart.
+worked example) and Slack Thomas. He builds it as a general-purpose tool, ships
+a new version, and then the snippet gets built or finished against the real
+thing. The order matters: if the snippet can't do its job without the new
+capability, **request first, snippet after it ships** — don't push a
+half-working snippet or design around a hack you'll have to undo. If the
+snippet is fully useful on its own and the new capability is just a
+convenience, push the clean snippet now and request the convenience alongside
+it. Either way, never push a snippet that references tooling that doesn't
+exist yet; it goes live to everyone immediately. `AGENTS.md` Part A spells
+this out.
 
 > **Using an AI assistant?** Open this folder in Claude Code or Cursor and it
 > loads [`AGENTS.md`](AGENTS.md) automatically — the complete spec, written for
