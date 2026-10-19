@@ -22,13 +22,13 @@ the popup reading something off the page — that's an **extension feature**:
 write it up as a file in [`requests/`](requests/) (there's a template and a
 worked example) and Slack Thomas. He builds it, ships a new version, and you
 update your snippet to use it. Most asks split into "snippet part now, request
-for the rest"; `AI-CONTEXT.md` Part A explains how to tell them apart.
+for the rest"; `AGENTS.md` Part A explains how to tell them apart.
 
-> **Using an AI assistant?** Tell it to read [`AI-CONTEXT.md`](AI-CONTEXT.md)
-> first. It's the complete spec, written for an AI: what the extension already
-> provides, how to decide snippet-vs-extension, the file format, and how to
-> write a request. Claude Code and Cursor pick it up automatically via
-> `CLAUDE.md` / `AGENTS.md` when opened in this folder.
+> **Using an AI assistant?** Open this folder in Claude Code or Cursor and it
+> loads [`AGENTS.md`](AGENTS.md) automatically — the complete spec, written for
+> an AI: what the extension already provides, how to decide snippet-vs-extension,
+> the file format, and how to write a request. (Other tools: paste `AGENTS.md`
+> into the chat.)
 
 ---
 
@@ -116,7 +116,7 @@ the HTML/CSS/JS that gets injected into the page exactly as written.
   run twice, and must tolerate a missing target element.
 
 The full specification — every type, every attribute, worked examples, and the
-rules for scripts — is in [`AI-CONTEXT.md`](AI-CONTEXT.md). It's written for AI
+rules for scripts — is in [`AGENTS.md`](AGENTS.md). It's written for AI
 assistants but it's the reference for humans too.
 
 ---

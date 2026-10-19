@@ -11,7 +11,7 @@ this is for and what the designer's workflow would look like.>
 
 ## The gap
 <Precisely what can't be done from a snippet, and why (which bullet of
-AI-CONTEXT.md Part A's test it hits).>
+AGENTS.md Part A's test it hits).>
 
 ## Proposed capability (general, reusable)
 <How it would be declared in a snippet's metadata and how it would behave in

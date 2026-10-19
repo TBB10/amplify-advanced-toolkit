@@ -6,7 +6,7 @@ code and ships changes through the Chrome Web Store.
 
 ## How it works
 
-1. You (or your AI assistant, following `AI-CONTEXT.md` Part C) write one
+1. You (or your AI assistant, following `AGENTS.md` Part C) write one
    Markdown file per capability: `requests/<kebab-case-title>.md`, using
    `_template.md`.
 2. Build whatever part of the ask *is* a snippet with existing tooling, and
@@ -28,5 +28,5 @@ code and ships changes through the Chrome Web Store.
 - **No extension code.** Describe behavior and the metadata syntax you'd like;
   Thomas handles the implementation.
 
-Before writing one, check the "already provided" table in `AI-CONTEXT.md`
+Before writing one, check the "already provided" table in `AGENTS.md`
 Part A — most needs are covered by an existing param type.
