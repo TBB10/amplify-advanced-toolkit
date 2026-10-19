@@ -1,33 +1,123 @@
-# AI context: writing snippet files for the Amplify Advanced Toolkit
+# AI context: building for the Amplify Advanced Toolkit
 
-You are helping a CivicPlus staff member turn custom HTML/CSS/JS for a
-Streamline **Amplify** website into a *snippet file* for the Amplify Advanced
-Toolkit Chrome extension. This document is the complete specification. Follow
-it exactly; when it conflicts with your general instincts, this document wins.
+You are helping a CivicPlus staff member build site tweaks for Streamline
+**Amplify** websites using the Amplify Advanced Toolkit Chrome extension. This
+document is the complete specification. Follow it exactly; when it conflicts
+with your general instincts, this document wins.
 
-## What a snippet file is
+There are two very different kinds of work, and your first job on every
+request is to tell them apart:
 
-A snippet is a single `.html` file that the extension injects verbatim into
-every page of a website — either right before `</head>` or right before
-`</body>`. Staff toggle snippets on/off from the extension popup and can adjust
-any values the file declares as parameters.
+1. **A snippet** — a `.html` file in `head/` or `body/` of this repo. You can
+   build these completely. Pushing one publishes it to everyone's extension.
+2. **An extension feature** — anything that needs code inside the extension
+   itself (the popup UI, how controls behave, reading the live page from the
+   popup, Save/Sync/preview behavior). You **cannot** build these. The
+   extension's code lives on Thomas's machine and ships through the Chrome Web
+   Store. For these you write a request file into `requests/` (Part C) and the
+   user Slacks Thomas.
 
-Snippet files live in this GitHub repository, in exactly two folders:
+Most asks are snippets, or a snippet plus a small request. Say which part is
+which — "we can build this part; this part needs Thomas" — then do the snippet
+part now.
 
-- `head/` — injected before `</head>`
-- `body/` — injected before `</body>`
+---
 
-Pushing a file to either folder publishes it to every staff member's extension.
-The repository contains only these two folders plus documentation; the
-extension's own code is maintained elsewhere and is not something you can
-change from here. Only ever create or edit files in `head/` and `body/`.
+# Part A — Snippet or extension feature? Decide first.
+
+## What the extension already gives every snippet (use these, don't rebuild them)
+
+Before deciding something needs new tooling, check this list. Nearly every
+"the user needs to be able to adjust X" is already covered by a param type.
+
+| Need | Already provided by |
+|---|---|
+| User-adjustable color | `type=color` (swatch + hex box, blank = "no color") |
+| **Pull a color from the live site into that picker** | `type=color` + `detect="selector\|property"` → eyedropper button; 2+ detectable colors also get "Detect all" |
+| User-adjustable size, count, px/rem value | `type=number` with `unit=` `min=` `max=` `step=` |
+| Value the user tunes while watching the page | `type=range` (slider) |
+| Free text (font name, short value) | `type=text` |
+| Pasted block of markup | `type=textarea` |
+| Pick one of fixed choices | `type=select options="Label:value\|..."` |
+| Choose which elements/selectors an effect applies to | `type=multiselect options="Label:selector\|..."` → comma-joined selector list |
+| Google Fonts per text type, with weights | `type=fontmap` |
+| Same value in several CSS rules | one param, repeat `{{name}}` |
+| "Leave the site's own style unless set" | `default=""` — a blank value makes the CSS declaration invalid, so the site's styling stays |
+| See changes before saving | live preview (always on, automatic) |
+| Try a file before pushing | the user's Local Testing mode (reads their local `head/`/`body/`) |
+| Undo a broken site | Site Recovery in the popup (Actions menu) |
+| Values survive the snippet being edited later | automatic (`amplify-params` metadata written by the extension) |
+
+Combine these freely. A snippet with six color params, two of them with
+`detect`, a range, and `default=""` fallbacks is normal and needs nothing new.
+
+## The test: does it need code to run *outside the injected HTML*?
+
+A snippet is text the extension drops into the page. Everything it does happens
+**inside the page** via that text's own `<style>`/`<script>`. So:
+
+**It's a snippet if** the behavior can be expressed as CSS/JS that runs on the
+site's pages, with values exposed through the existing param types above.
+
+**It's an extension feature if** it needs any of these — no snippet can do
+them, and no amount of clever script inside the page changes that:
+
+- Code running **in the popup** (new buttons, new fields, new layouts, changes
+  to how the list or controls look or behave).
+- The popup **reading from the live page** or talking to the site's API in a
+  new way (e.g. "detect the current font", "read the site's logo URL").
+- A **new param `type=`** or a **new param attribute**. The types/attributes in
+  Part B are the complete set. Unknown `type=` values silently fall back to a
+  color picker — never invent one.
+- Changes to **Save, Sync, live preview, Favorites, Local Testing, Appearance,
+  or Site Recovery** behavior.
+- Anything about the extension's **permissions**, store listing, or install.
+- Loading an asset that isn't on a **public URL**.
+
+Worked example — "Quicklinks Template Colors with a 'detect colors from site'
+button": the CSS with six color params is a **snippet** (build it). "Detect
+colors" needed the popup to read computed colors from the page and fill the
+fields — that was an **extension feature**, so it was requested, Thomas built
+`detect=` as a reusable attribute, and now any snippet gets it with one
+attribute. That's the pattern: snippets stay simple; reusable capability goes
+in the extension once.
+
+## Prefer existing tooling; request new tooling only when it's clearly better
+
+- First, build the ask with the existing param types, even if slightly less
+  elegant. A `select` of three presets beats a request for a new control.
+- Write a request **when a new reusable capability would make this snippet
+  (and likely future ones) materially simpler or possible at all** — not for
+  one-off convenience. Good requests describe a *general* tool ("a param
+  attribute to read a computed style from the page"), not a one-snippet hack
+  ("a Detect button for Quicklinks").
+- If you're unsure whether something exists, re-read the table above and Part
+  B. Do not assume a feature is missing because you haven't seen it used.
+
+## Where things live (and what you may touch)
+
+```
+head/        snippets injected before </head>        ← you may create/edit
+body/        snippets injected before </body>        ← you may create/edit
+requests/    extension feature requests (Part C)     ← you may create
+README.md, AI-CONTEXT.md, AGENTS.md, CLAUDE.md       ← read only
+```
+
+Nothing else exists here. The extension's source is not in this repo and you
+cannot change it from here.
 
 ## Your output
 
-Produce **one complete `.html` file** and state **which folder it belongs in**
-and **its exact filename**. Output the file contents in a single code block
-with no commentary inside it. Then, separately and briefly, list the params
-you declared and why.
+For the snippet part: produce **one complete `.html` file**, state **which
+folder it belongs in** and **its exact filename**, in a single code block with
+no commentary inside. Then briefly list the params you declared and why.
+
+For any extension part: produce a request file per Part C and tell the user to
+Slack Thomas with the filename.
+
+---
+
+# Part B — Snippet file specification
 
 ## Step 1 — choose the folder
 
@@ -64,7 +154,8 @@ before injection.
 
 - `title:` — always include exactly one. Short, describes the effect.
 - `param:` — zero or more, one per adjustable value (see Step 4).
-- No other metadata exists. Do not invent fields.
+- These two are the only metadata lines that exist. Do not invent others; an
+  unknown line is treated as snippet content and injected into the page.
 - Nothing may precede the metadata lines except blank lines.
 
 ## Step 4 — parameters and placeholders
@@ -82,7 +173,7 @@ Param attributes:
 
 | `type=` | Control | Type-specific attributes | Use for |
 |---|---|---|---|
-| `color` | swatch + hex text box | — | any CSS color; `default=#1978be` |
+| `color` | swatch + hex text box | `detect="selector\|property"` (optional) | any CSS color; `default=#1978be`, or `default=""` for "unset" |
 | `number` | number input | `unit=px` (display only), `min=`, `max=`, `step=` | sizes, counts, px/rem/% values |
 | `range` | slider | same as `number` | a value the user will tune live (spacing, opacity, radius) |
 | `text` | single-line text | `placeholder="..."` | font family name, short free value |
@@ -110,6 +201,15 @@ Hard rules:
 6. Choose `range` over `number` when there is a sensible min/max and the user
    will want to drag it while watching the page. Choose `number` for counts or
    when the range is open-ended.
+7. **`detect="<css selector>|<css property>"`** (color params only) adds an
+   eyedropper that samples that property's computed value from the live page
+   and fills the picker. Use the selector the snippet itself styles, and the
+   property that holds the color: `background-color`, `color`, `fill`,
+   `border-color`. A transparent `background-color` climbs to the nearest
+   visible ancestor color. Omit `|property` to mean `color`. States that aren't
+   on screen (`:hover`, `:focus`) can't be detected — leave those params
+   without `detect`. When two or more params have `detect`, the popup also
+   shows "Detect all colors from this page".
 
 ### What to parameterize
 
@@ -211,6 +311,30 @@ live-preview feature injects it into **already-loaded** pages. Ensure:
 </style>
 ```
 
+### Colors sampled from the site, with "unset" defaults → `head/`
+
+```html
+<!-- title: Quicklinks Template Colors -->
+<!-- param: cardbg type=color label="Card background" default="" detect=".amplify-quicklinks-container .quicklinks-container article a|background-color" -->
+<!-- param: cardhover type=color label="Card hover background" default="" -->
+<!-- param: icon type=color label="Icon" default="" detect=".amplify-quicklinks-container article .icon|color" -->
+<style>
+.amplify-section-container.amplify-quicklinks-container .quicklinks-container article a:not(:hover) {
+  background: {{cardbg}} !important;
+}
+.amplify-section-container.amplify-quicklinks-container .quicklinks-container article a:hover {
+  background: {{cardhover}} !important;
+}
+.amplify-section-container.amplify-quicklinks-container article .icon svg {
+  fill: {{icon}} !important;
+}
+</style>
+```
+
+`default=""` leaves each rule inert until the user sets a color; `detect`
+fills a picker from what the site currently shows. The hover color has no
+`detect` because hover state can't be sampled from a static page.
+
 ### Fonts (special control) → `head/`
 
 ```html
@@ -285,10 +409,80 @@ live-preview feature injects it into **already-loaded** pages. Ensure:
 - No decorative wrapper comments; no `amplify-toolkit` / `amplify-params`
   comments.
 
-## Things you cannot do from a snippet (tell the user to ask the extension owner)
+---
 
-- Add a new kind of control or metadata field.
-- Change how live preview, Sync, or Save behaves.
-- Change the popup's appearance.
-- Load files that aren't on a public URL.
-- Rename or move an existing snippet file safely.
+# Part C — Requesting an extension feature
+
+When Part A says a piece of the ask is an extension feature, don't try to
+build it, approximate it with hacks, or tell the user it's impossible. Write a
+request file and tell them to Slack Thomas.
+
+## Before writing a request
+
+1. Re-check Part A's table and Part B. Many "missing" features exist.
+2. Separate the ask: build the snippet portion now with existing tooling,
+   leaving a clear gap for the requested capability (e.g. the param exists but
+   has to be filled by hand until the feature ships).
+3. Think **general**. The request should describe a reusable capability that
+   any snippet could use, phrased as a param type/attribute or a popup
+   behavior — not a one-snippet special case. `detect=` is the model: one
+   attribute, every color param can use it.
+
+## Writing the request
+
+Create **one Markdown file** at `requests/<kebab-case-title>.md`. Use this
+exact structure (also in `requests/_template.md`):
+
+```markdown
+# <Short title of the capability>
+
+**Requested by:** <name>  **Date:** <YYYY-MM-DD>  **Status:** open
+
+## What we're trying to do
+<One paragraph: the user-facing goal, in plain language. Which snippet(s)
+this is for and what the designer's workflow would look like.>
+
+## What we built with existing tooling
+<The snippet file(s) created or edited, and exactly what part works today.>
+
+## The gap
+<Precisely what can't be done from a snippet, and why (which bullet of
+Part A's test it hits).>
+
+## Proposed capability (general, reusable)
+<How it would be declared in a snippet's metadata and how it would behave in
+the popup. Prefer a new attribute on an existing type over a new type; prefer
+a new type over a popup-wide behavior change. Include a one-line example.>
+
+## Example
+<A short snippet excerpt showing the proposed syntax in use.>
+
+## Notes
+<Edge cases, alternatives considered, anything Thomas should know.>
+```
+
+Rules:
+
+- Filename describes the capability, not the snippet:
+  `detect-computed-color-for-params.md`, not `quicklinks-request.md`.
+- One capability per file. Two unrelated needs → two files.
+- Don't include extension source code. Thomas owns that; describe behavior.
+- Commit the request together with the snippet work, push, and tell the user:
+  "Slack Thomas: `requests/<file>.md` is ready."
+
+## After the request ships
+
+Thomas marks the request `Status: done` (or `declined` with a reason) and
+notes the released version. The user updates their extension (Chrome does this
+automatically), then you update the snippet to use the new capability.
+
+---
+
+# Quick reference: what you can never do from a snippet
+
+- Add a new param `type=`, attribute, or metadata line → **request**.
+- Change popup UI, Save/Sync/preview/Favorites/Local Testing/Appearance/Site
+  Recovery behavior → **request**.
+- Have the popup read the live page or the site's API → **request**.
+- Load assets that aren't on a public URL → not possible; inline them.
+- Rename or move an existing snippet file → never; edit in place.

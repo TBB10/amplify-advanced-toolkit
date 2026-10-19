@@ -1,10 +1,9 @@
 <!-- title: Quicklinks Template Colors -->
-<!-- param: detect type=detect label="Detect from site" -->
-<!-- param: cardbg type=color label="Card background" default="" -->
+<!-- param: cardbg type=color label="Card background" default="" detect=".amplify-quicklinks-container .quicklinks-container article a|background-color" -->
 <!-- param: cardhover type=color label="Card hover background" default="" -->
-<!-- param: iconbg type=color label="Icon circle" default="" -->
-<!-- param: icon type=color label="Icon" default="" -->
-<!-- param: text type=color label="Label text" default="" -->
+<!-- param: iconbg type=color label="Icon circle" default="" detect=".amplify-quicklinks-container article .icon|background-color" -->
+<!-- param: icon type=color label="Icon" default="" detect=".amplify-quicklinks-container article .icon|color" -->
+<!-- param: text type=color label="Label text" default="" detect=".amplify-quicklinks-container .quicklink-heading|color" -->
 <style>
   /*
    * Overrides the site's Quicklinks block, which uses !important, so every

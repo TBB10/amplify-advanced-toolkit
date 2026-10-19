@@ -17,18 +17,25 @@ Sync, or automatically within a day. No build step, no app update, no review.
 
 The extension itself (its code, its Chrome Web Store listing) is **not** in this
 repo and is maintained separately by Thomas. If you need the extension to do
-something new — a new kind of control, a change to how preview or Save works —
-that's a request for Thomas, not something you can do with a snippet.
+something new — a new kind of control, a change to how preview or Save works,
+the popup reading something off the page — that's an **extension feature**:
+write it up as a file in [`requests/`](requests/) (there's a template and a
+worked example) and Slack Thomas. He builds it, ships a new version, and you
+update your snippet to use it. Most asks split into "snippet part now, request
+for the rest"; `AI-CONTEXT.md` Part A explains how to tell them apart.
 
-> **Using an AI assistant to write snippets?** Give it [`AI-CONTEXT.md`](AI-CONTEXT.md).
-> It's the complete spec, written for an AI to read. Claude Code and Cursor pick
-> it up automatically via `CLAUDE.md` / `AGENTS.md` when opened in this folder.
+> **Using an AI assistant?** Tell it to read [`AI-CONTEXT.md`](AI-CONTEXT.md)
+> first. It's the complete spec, written for an AI: what the extension already
+> provides, how to decide snippet-vs-extension, the file format, and how to
+> write a request. Claude Code and Cursor pick it up automatically via
+> `CLAUDE.md` / `AGENTS.md` when opened in this folder.
 
 ---
 
 ## The three rules
 
-1. **Only touch `head/` and `body/`.** Everything else here is documentation.
+1. **Only touch `head/`, `body/`, and `requests/`.** Everything else here is
+   documentation.
 
 2. **Never rename, move, or delete an existing snippet file.** The filename is
    the snippet's permanent identity — it's baked into every site where the
@@ -101,7 +108,9 @@ the HTML/CSS/JS that gets injected into the page exactly as written.
 - `param:` — one line per value the user can adjust. Put `{{name}}` in the body
   where the value goes. Types: `color`, `number`, `range`, `text`, `textarea`,
   `select`, `multiselect`, `fontmap`. Set `default=` to the value that
-  reproduces the original look.
+  reproduces the original look. A color param can add
+  `detect="selector|property"` to get an eyedropper that samples the site's
+  current color.
 - Filenames: kebab-case, describing the effect (`tighten-accordion-spacing.html`).
 - Scripts must work on an already-loaded page, must not stack duplicates when
   run twice, and must tolerate a missing target element.
