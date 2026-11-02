@@ -1,0 +1,16 @@
+<!-- title: Accordion Text Color -->
+<!-- param: color type=color label="Text color" default=#ffffff -->
+<style>
+/* Accordion headers and freeform content inside accordions */
+.accordion-section .accordion-header,
+.accordion-section .accordion-header *,
+.accordion-section .accordion-content .amplify-freeform-rendered,
+.accordion-section .accordion-content .amplify-freeform-rendered * {
+  color: {{color}} !important;
+}
+
+/* Keep links identifiable without relying on color */
+.accordion-section .accordion-content .amplify-freeform-rendered a {
+  text-decoration: underline;
+}
+</style>
